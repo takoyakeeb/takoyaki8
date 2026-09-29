@@ -9,11 +9,14 @@ import (
 const debug = false
 
 func main() {
-	var scanner Scanner = NewMatrix(colPins, rowPins, debounceCount)
+	var scanner Scanner = NewMatrix(colPins[:], rowPins[:], debounceCount)
 	kb := usbkbd.Port()
 
-	// 押した時のキーコードを覚えておき、離す時に同じものを離す
-	var held [NumKeys]uint16
+	// 今は常にレイヤー0を使う(レイヤーの切り替えは後で作る)
+	activeLayer := 0
+
+	// 押した時に送ったキーを覚えておき、離す時に同じものを離す(0は「送っていない」)
+	var held [NumKeys]usbkbd.Keycode
 	events := make([]KeyEvent, 0, NumKeys)
 
 	for {
@@ -25,16 +28,15 @@ func main() {
 			}
 
 			if ev.Pressed {
-				code := keymap.Lookup(0, ev.ID)
-				held[ev.ID] = code
-				if code != 0 {
-					kb.Down(usbkbd.Keycode(code))
+				code := keymap.Lookup(activeLayer, ev.ID)
+				if kc, ok := toHID(code); ok {
+					held[ev.ID] = kc
+					kb.Down(kc)
 				}
 			} else {
-				code := held[ev.ID]
-				held[ev.ID] = 0
-				if code != 0 {
-					kb.Up(usbkbd.Keycode(code))
+				if kc := held[ev.ID]; kc != 0 {
+					held[ev.ID] = 0
+					kb.Up(kc)
 				}
 			}
 		}
