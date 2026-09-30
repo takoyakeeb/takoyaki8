@@ -12,7 +12,13 @@ const debug = false
 
 func main() {
 	var scanner Scanner = NewMatrix(colPins[:], rowPins[:], debounceCount)
+
 	kb := usbkbd.Port()
+
+	// 起動時: Flashに有効なキーマップがあればそれを使う。無効(未保存・壊れている)なら初期キーマップのまま。
+	if km, err := loadKeymapFromFlash(); err == nil {
+		keymap = km
+	}
 
 	// 今は常にレイヤー0を使う(レイヤーの切り替えは後で作る)
 	activeLayer := 0
@@ -44,7 +50,7 @@ func main() {
 			}
 		}
 
-		// USBシリアルに届いたコマンド(INFO / GET / SET / DUMP)を処理する
+		// USBシリアルに届いたコマンド(INFO / GET / SET / DUMP / SAVE / LOAD / RESET)を処理する
 		pollSerial()
 
 		time.Sleep(time.Millisecond)

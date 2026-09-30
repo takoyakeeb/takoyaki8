@@ -8,8 +8,8 @@ import (
 // tinykeemap との通信プロトコル(tinykeemap の docs/protocol.md、Draft v1)の実装。
 // 1行のコマンドを受け取り、応答の1行(末尾の改行なし)を返す。
 //
-// 今のところ実装しているのは INFO / GET / SET / DUMP(RAMのみ)。
-// SAVE / LOAD / RESET は、Flash保存を作るときに一緒に実装する。
+// INFO / GET / SET / DUMP はRAMのキーマップを読み書きする。
+// SAVE / LOAD / RESET はRAMとFlashの間の受け渡し(Flashの処理は flash.go)。
 
 // handleCommand は、1行のコマンドを処理して応答を返す。
 // 空の行(何も書かれていない行)は、コマンドではないので "" を返す(応答しない)。
@@ -85,9 +85,36 @@ func handleCommand(line string) string {
 		}
 		return resp
 
-	case "SAVE", "LOAD", "RESET":
-		// まだ作っていないコマンド。「知らないコマンド」として断る。
-		return "ERR BADCMD " + f[0] + " not implemented"
+		case "SAVE":
+		if len(f) != 1 {
+			return usageError("SAVE")
+		}
+		// 現在のキーマップをFlashに保存する。消去を伴うので少し時間がかかる。
+		if err := saveKeymapToFlash(&keymap); err != nil {
+			return "ERR FLASH " + err.Error()
+		}
+		return "OK"
+
+	case "LOAD":
+		if len(f) != 1 {
+			return usageError("LOAD")
+		}
+		// Flashの内容を読み直す。未保存の変更は捨てる。
+		// Flashの内容が無効なときは、RAMのキーマップを変えずにエラーを返す。
+		km, err := loadKeymapFromFlash()
+		if err != nil {
+			return "ERR FLASH " + err.Error()
+		}
+		keymap = km
+		return "OK"
+
+	case "RESET":
+		if len(f) != 1 {
+			return usageError("RESET")
+		}
+		// 初期キーマップに戻す(RAMのみ)。Flashは SAVE するまで変わらない。
+		keymap = defaultKeymap()
+		return "OK"
 	}
 
 	return "ERR BADCMD unknown command"
