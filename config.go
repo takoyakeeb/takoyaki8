@@ -12,7 +12,7 @@ import (
 const (
 	deviceName      = "takoyaki8"
 	protocolVersion = 1       // tinykeemap の docs/protocol.md の proto と同じ値
-	firmwareVersion = "0.1.0" // ファームウェアのバージョン
+	firmwareVersion = "0.2.0" // ファームウェアのバージョン
 )
 
 // ===== ピン割り当て(COL2ROW) =====
