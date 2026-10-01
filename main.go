@@ -20,12 +20,14 @@ func main() {
 		keymap = km
 	}
 
-	// 今は常にレイヤー0を使う(レイヤーの切り替えは後で作る)
-	activeLayer := 0
-
 	// 押した時に送ったキーを覚えておき、離す時に同じものを離す(0は「送っていない」)
 	// SET でキーマップを書き換えても、押している最中のキーは元のキーを離すので、押しっぱなしにならない
 	var held [NumKeys]usbkbd.Keycode
+
+	// MO(n) のキーを押している間は「n+1」を覚えておく(0は「MOを押していない」)。
+	// 離す時に、押した時と同じレイヤーを戻す。途中でキーマップやレイヤーが変わっても、戻し忘れない。
+	var heldMO [NumKeys]uint8
+
 	events := make([]KeyEvent, 0, NumKeys)
 
 	for {
@@ -37,12 +39,21 @@ func main() {
 			}
 
 			if ev.Pressed {
-				code := keymap.Lookup(activeLayer, ev.ID)
-				if kc, ok := toHID(code); ok {
+				// いま有効なレイヤーで、押したキーの keycode を決める
+				code := keymap.Lookup(activeLayers(), ev.ID)
+				if layer, ok := momentaryLayer(code); ok {
+					// MO(n): 押している間だけ、レイヤー n を有効にする
+					heldMO[ev.ID] = uint8(layer) + 1
+					momentary[layer]++
+				} else if kc, ok := toHID(code); ok {
 					held[ev.ID] = kc
 					kb.Down(kc)
 				}
 			} else {
+				if m := heldMO[ev.ID]; m != 0 {
+					heldMO[ev.ID] = 0
+					momentary[m-1]--
+				}
 				if kc := held[ev.ID]; kc != 0 {
 					held[ev.ID] = 0
 					kb.Up(kc)

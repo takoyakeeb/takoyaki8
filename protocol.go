@@ -85,7 +85,7 @@ func handleCommand(line string) string {
 		}
 		return resp
 
-		case "SAVE":
+	case "SAVE":
 		if len(f) != 1 {
 			return usageError("SAVE")
 		}
@@ -149,10 +149,14 @@ func parseKeycode(s string) (code uint16, ok bool) {
 }
 
 // validKeycode は、このファームが受け付けるキーコードかどうかを返す。
-// 「何もしない」「透過」と、toHID で変換できるキーコードだけを認める。
-// (修飾キーなどを toHID に追加すれば、自動的にここでも受け付けるようになる)
+// 「何もしない」「透過」と、MO(n)(n はこのファームのレイヤー数より小さいもの)と、
+// toHID で変換できるキーコード(基本キー・修飾キー単体)だけを認める。
+// (TG / TO などの種類を足すときは、ここにも足す)
 func validKeycode(code uint16) bool {
 	if code == KC_NO || code == KC_TRANSPARENT {
+		return true
+	}
+	if _, ok := momentaryLayer(code); ok {
 		return true
 	}
 	_, ok := toHID(code)
