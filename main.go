@@ -41,10 +41,19 @@ func main() {
 			if ev.Pressed {
 				// いま有効なレイヤーで、押したキーの keycode を決める
 				code := keymap.Lookup(activeLayers(), ev.ID)
-				if layer, ok := momentaryLayer(code); ok {
-					// MO(n): 押している間だけ、レイヤー n を有効にする
-					heldMO[ev.ID] = uint8(layer) + 1
-					momentary[layer]++
+				if kind, layer, ok := decodeLayerKey(code); ok {
+					switch kind {
+					case layerMO:
+						// MO(n): 押している間だけ、レイヤー n を有効にする(離すときに戻す)
+						heldMO[ev.ID] = uint8(layer) + 1
+						momentary[layer]++
+					case layerTG:
+						// TG(n): 押すたびに、レイヤー n の有効・無効を切り替える(離すときは何もしない)
+						toggleLayer(layer)
+					case layerTO:
+						// TO(n): 切り替えで有効にしているレイヤーを、n だけにする(離すときは何もしない)
+						moveToLayer(layer)
+					}
 				} else if kc, ok := toHID(code); ok {
 					held[ev.ID] = kc
 					kb.Down(kc)

@@ -106,6 +106,7 @@ func handleCommand(line string) string {
 			return "ERR FLASH " + err.Error()
 		}
 		keymap = km
+		resetLayerState() // キーマップが入れ替わったので、TG / TO の状態は解除する(protocol.md §3)
 		return "OK"
 
 	case "RESET":
@@ -114,6 +115,7 @@ func handleCommand(line string) string {
 		}
 		// 初期キーマップに戻す(RAMのみ)。Flashは SAVE するまで変わらない。
 		keymap = defaultKeymap()
+		resetLayerState() // TG / TO の状態も解除して、レイヤー0だけに戻す(protocol.md §3)
 		return "OK"
 	}
 
@@ -149,14 +151,14 @@ func parseKeycode(s string) (code uint16, ok bool) {
 }
 
 // validKeycode は、このファームが受け付けるキーコードかどうかを返す。
-// 「何もしない」「透過」と、MO(n)(n はこのファームのレイヤー数より小さいもの)と、
+// 「何もしない」「透過」と、レイヤー切り替え(MO / TG / TO。n はこのファームのレイヤー数より小さいもの)と、
 // toHID で変換できるキーコード(基本キー・修飾キー単体)だけを認める。
-// (TG / TO などの種類を足すときは、ここにも足す)
+// (DF / TT などの種類を足すときは、ここにも足す)
 func validKeycode(code uint16) bool {
 	if code == KC_NO || code == KC_TRANSPARENT {
 		return true
 	}
-	if _, ok := momentaryLayer(code); ok {
+	if _, _, ok := decodeLayerKey(code); ok {
 		return true
 	}
 	_, ok := toHID(code)

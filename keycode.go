@@ -25,7 +25,9 @@ const (
 	KC_RALT uint16 = 0x00E6 // 右 Alt
 	KC_RGUI uint16 = 0x00E7 // 右 GUI
 
-	// レイヤー切り替え(QMK の現行の値。MO(n) = 0x5220 + n。例: MO(1) = 0x5221)
-	QK_MOMENTARY  uint16 = 0x5220 // MO(n): 押している間だけレイヤー n を有効にする(n は下位5bit)
-	QK_LAYER_MASK uint16 = 0x001F // レイヤー切り替えの keycode から、レイヤー番号 n だけを取り出すための印(下位5bit)
+	// レイヤー切り替え(QMK の現行の値。TO(n) = 0x5200 + n、MO(n) = 0x5220 + n、TG(n) = 0x5260 + n。例: MO(1) = 0x5221)
+	QK_TO           uint16 = 0x5200 // TO(n): 切り替えで有効にしているレイヤーを、n だけにする(n は下位5bit)
+	QK_MOMENTARY    uint16 = 0x5220 // MO(n): 押している間だけレイヤー n を有効にする(n は下位5bit)
+	QK_TOGGLE_LAYER uint16 = 0x5260 // TG(n): 押すたびにレイヤー n の有効・無効を切り替える(n は下位5bit)
+	QK_LAYER_MASK   uint16 = 0x001F // レイヤー切り替えの keycode から、レイヤー番号 n だけを取り出すための印(下位5bit)
 )
