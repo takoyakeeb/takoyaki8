@@ -2,6 +2,19 @@ package main
 
 import usbkbd "machine/usb/hid/keyboard"
 
+// modifierKeys は、修飾キー単体(KC_LCTL〜KC_RGUI = 0x00E0〜0x00E7)に対応する、
+// TinyGoの Keycode の表。並びは keycode.go の KC_LCTL〜KC_RGUI と同じ。
+var modifierKeys = [...]usbkbd.Keycode{
+	usbkbd.KeyLeftCtrl,
+	usbkbd.KeyLeftShift,
+	usbkbd.KeyLeftAlt,
+	usbkbd.KeyLeftGUI,
+	usbkbd.KeyRightCtrl,
+	usbkbd.KeyRightShift,
+	usbkbd.KeyRightAlt,
+	usbkbd.KeyRightGUI,
+}
+
 // toHID は、キーマップのキーコード(keycode.go の値)を、
 // TinyGoのキーボード機能が使う Keycode に変換する。
 //
@@ -15,6 +28,9 @@ func toHID(code uint16) (kc usbkbd.Keycode, ok bool) {
 	if code >= KC_A && code <= 0x00A4 {
 		return usbkbd.KeyA + usbkbd.Keycode(code-KC_A), true
 	}
-	// 修飾キー(Ctrlなど)は、値の定義を決めてから対応する
+	// 修飾キー単体(0xE0〜0xE7)は、表から引く
+	if code >= KC_LCTL && code <= KC_RGUI {
+		return modifierKeys[code-KC_LCTL], true
+	}
 	return 0, false
 }
