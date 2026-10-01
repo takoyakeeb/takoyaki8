@@ -28,6 +28,10 @@ func main() {
 	// 離す時に、押した時と同じレイヤーを戻す。途中でキーマップやレイヤーが変わっても、戻し忘れない。
 	var heldMO [NumKeys]uint8
 
+	// 押した時に押した修飾キー(Shift など)を覚えておき、離す時に同じものを離す(0は「押していない」)。
+	// ビット0〜7が、左Ctrl・左Shift・左Alt・左GUI・右Ctrl・右Shift・右Alt・右GUI(mods.go)。
+	var heldMods [NumKeys]uint8
+
 	events := make([]KeyEvent, 0, NumKeys)
 
 	for {
@@ -54,18 +58,28 @@ func main() {
 						// TO(n): 切り替えで有効にしているレイヤーを、n だけにする(離すときは何もしない)
 						moveToLayer(layer)
 					}
-				} else if kc, ok := toHID(code); ok {
-					held[ev.ID] = kc
-					kb.Down(kc)
+				} else if a, ok := decodeKey(code); ok {
+					// 基本キー・修飾キー単体・修飾キー付き。修飾キーを先に押してから、基本キーを押す
+					heldMods[ev.ID] = a.mods
+					pressMods(kb, a.mods)
+					if a.hasKey {
+						held[ev.ID] = a.key
+						kb.Down(a.key)
+					}
 				}
 			} else {
 				if m := heldMO[ev.ID]; m != 0 {
 					heldMO[ev.ID] = 0
 					momentary[m-1]--
 				}
+				// 基本キーを先に離してから、修飾キーを離す
 				if kc := held[ev.ID]; kc != 0 {
 					held[ev.ID] = 0
 					kb.Up(kc)
+				}
+				if mods := heldMods[ev.ID]; mods != 0 {
+					heldMods[ev.ID] = 0
+					releaseMods(kb, mods)
 				}
 			}
 		}

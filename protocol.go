@@ -152,7 +152,7 @@ func parseKeycode(s string) (code uint16, ok bool) {
 
 // validKeycode は、このファームが受け付けるキーコードかどうかを返す。
 // 「何もしない」「透過」と、レイヤー切り替え(MO / TG / TO。n はこのファームのレイヤー数より小さいもの)と、
-// toHID で変換できるキーコード(基本キー・修飾キー単体)だけを認める。
+// decodeKey で読み取れるキーコード(基本キー・修飾キー単体・修飾キー付き)だけを認める。
 // (DF / TT などの種類を足すときは、ここにも足す)
 func validKeycode(code uint16) bool {
 	if code == KC_NO || code == KC_TRANSPARENT {
@@ -161,7 +161,7 @@ func validKeycode(code uint16) bool {
 	if _, _, ok := decodeLayerKey(code); ok {
 		return true
 	}
-	_, ok := toHID(code)
+	_, ok := decodeKey(code)
 	return ok
 }
 
