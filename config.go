@@ -46,7 +46,20 @@ const (
 	ledEveryLoops = 20
 )
 
-// ピン(pinLED は led.go で使用中。そのほかは未使用で、シリーズ共通ルールの記録用)
+// ===== OLED(SSD1306、128x32、I2C)の設定 =====
+const (
+	// I2C アドレス(7ビット)。スキャンで 0x3C と確認済み。
+	oledAddress = 0x3C
+
+	// 通信の速さ。乱れるときは 100 * machine.KHz に下げる。
+	oledFreq = 400 * machine.KHz
+
+	// OLED の表示を更新する間隔。メインループ(約1ms)が何回まわるたびに1回更新するか。
+	// 100 なら約100msごと。1 にすると毎回更新する(いちばん厳しい確認用)。
+	oledEveryLoops = 100
+)
+
+// ピン(pinLED は led.go、pinSDA / pinSCL は oled.go で使用中。そのほかは未使用で、シリーズ共通ルールの記録用)
 const (
 	pinLED    = machine.GPIO26
 	pinSDA    = machine.GPIO14

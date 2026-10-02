@@ -18,6 +18,9 @@ func main() {
 	// LED(WS2812B)を使える状態にする(led.go)
 	initLED()
 
+	// OLED(SSD1306、I2C)を使える状態にする(oled.go)。つながっていなければ、何もしない
+	initOLED()
+
 	// 起動時: Flashに有効なキーマップがあればそれを使う。無効(未保存・壊れている)なら初期キーマップのまま。
 	if km, err := loadKeymapFromFlash(); err == nil {
 		keymap = km
@@ -93,6 +96,10 @@ func main() {
 		// LED の表示を、一定回数ごとに1回だけ更新する(led.go)。
 		// 更新中は割り込みが止まる場合があるので、キー処理とシリアル処理のあとに置く。
 		tickLED()
+
+		// OLED の表示を、一定回数ごとに1回だけ更新する(oled.go)。
+		// 画面全体を送る間(約12ms)は、ループが止まる。LED の更新のあとに置く。
+		tickOLED()
 
 		time.Sleep(time.Millisecond)
 	}
