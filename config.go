@@ -34,7 +34,19 @@ const (
 // (1ms間隔でスキャンするので、約5msのチャタリング除去)
 const debounceCount = 5
 
-// 予約ピン(今回は未使用。シリーズ共通ルールの記録用)
+// ===== LED(WS2812B)の設定 =====
+const (
+	NumLEDs = 10 // つないだ LED の数
+
+	// 明るさの上限(0〜255)。32 は約12%で、10個を白で全灯しても約80mA程度。
+	ledLevel = 32
+
+	// LED の表示を更新する間隔。メインループ(約1ms)が何回まわるたびに1回更新するか。
+	// 20 なら約20msごと。1 にすると毎回更新する(いちばん厳しい確認用)。
+	ledEveryLoops = 20
+)
+
+// ピン(pinLED は led.go で使用中。そのほかは未使用で、シリーズ共通ルールの記録用)
 const (
 	pinLED    = machine.GPIO26
 	pinSDA    = machine.GPIO14

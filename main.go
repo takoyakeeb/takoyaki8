@@ -15,6 +15,9 @@ func main() {
 
 	kb := usbkbd.Port()
 
+	// LED(WS2812B)を使える状態にする(led.go)
+	initLED()
+
 	// 起動時: Flashに有効なキーマップがあればそれを使う。無効(未保存・壊れている)なら初期キーマップのまま。
 	if km, err := loadKeymapFromFlash(); err == nil {
 		keymap = km
@@ -86,6 +89,10 @@ func main() {
 
 		// USBシリアルに届いたコマンド(INFO / GET / SET / DUMP / SAVE / LOAD / RESET)を処理する
 		pollSerial()
+
+		// LED の表示を、一定回数ごとに1回だけ更新する(led.go)。
+		// 更新中は割り込みが止まる場合があるので、キー処理とシリアル処理のあとに置く。
+		tickLED()
 
 		time.Sleep(time.Millisecond)
 	}
