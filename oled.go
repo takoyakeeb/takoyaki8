@@ -49,6 +49,7 @@ var oledWhite = color.RGBA{R: 255, G: 255, B: 255, A: 255} // 点灯させる色
 // ===== 診断用(原因を調べ終わったら、このブロックと、呼び出している所を削除する) =====
 // true にすると、約1秒ごとに、USBシリアルへ「# oled ...」の行を出す(キーイベントと同じ「# 」始まり)。
 // 値は、起動してからの合計・最大値。
+// 初期値は false。true にすると診断の行が tinykeemap の応答に混ざるので、tinykeemap を使うときは false のままにする。
 const oledDiag = false
 
 var (
