@@ -3,12 +3,12 @@
 	(generator "pcbnew")
 	(generator_version "9.0")
 	(layer "F.Cu")
-	(descr "0.91 inch 128x32 I2C OLED module (PCB 38x12 mm), 4-pin header P2.54, pin 1 = GND (square pad). Module drawn from the display side with the pins at the left end. Dwgs.User shows glass, V.A and A.A.")
+	(descr "0.91 inch 128x32 I2C OLED module (PCB 38x12 mm), 4-pin header P2.54, pin 1 = GND (square pad). Module drawn from the display side with the pins at the left end (no silkscreen outline: the module hovers over the board). Dwgs.User shows glass, V.A and A.A. Parts on the module back are about 1.0 mm tall.")
 	(tags "OLED SSD1306 0.91 I2C module header")
 	(property "Reference" "REF**"
 		(at 17 -11.31 0)
 		(layer "F.SilkS")
-		(uuid "ade51ac9-658c-4ca1-8343-049b03a769ec")
+		(uuid "f7261b7e-58c1-4071-9783-2cfd84117331")
 		(effects
 			(font
 				(size 1 1)
@@ -19,7 +19,7 @@
 	(property "Value" "OLED_0.91in_I2C_Header"
 		(at 17 3.69 0)
 		(layer "F.Fab")
-		(uuid "1d23765b-4dcc-4893-9bee-f26d22864d67")
+		(uuid "d7e12b6d-e145-475f-a235-0413ab3fb9e6")
 		(effects
 			(font
 				(size 1 1)
@@ -31,7 +31,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "9c773679-f3e1-4381-8ffb-a531aca71d0e")
+		(uuid "cbe62320-4607-474d-8075-5cb773b828f7")
 		(effects
 			(font
 				(size 1 1)
@@ -43,7 +43,7 @@
 		(at 0 0 0)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "c97e3e2d-4665-4c26-b6da-979470b88401")
+		(uuid "0dc6d0fe-3e23-4c3a-803f-ccdb83d49752")
 		(effects
 			(font
 				(size 1 1)
@@ -53,75 +53,64 @@
 	)
 	(attr through_hole)
 	(fp_rect
-		(start -2.000 -9.810)
-		(end 36.000 2.190)
+		(start -1.600 -9.810)
+		(end 36.400 2.190)
 		(stroke
 			(width 0.1)
 			(type solid)
 		)
 		(fill no)
 		(layer "F.Fab")
-		(uuid "e3f5dd5b-5a88-45ff-8378-905755f126ef")
+		(uuid "2ecd34c9-25ea-4671-8a85-790637b3e1d3")
 	)
 	(fp_rect
-		(start -2.000 -9.810)
-		(end 36.000 2.190)
-		(stroke
-			(width 0.12)
-			(type solid)
-		)
-		(fill no)
-		(layer "F.SilkS")
-		(uuid "0c832f9e-af9c-4bad-99f8-93d14c5c43ca")
-	)
-	(fp_rect
-		(start -2.500 -10.310)
-		(end 36.500 2.690)
+		(start -2.100 -10.310)
+		(end 36.900 2.690)
 		(stroke
 			(width 0.05)
 			(type solid)
 		)
 		(fill no)
 		(layer "F.CrtYd")
-		(uuid "ae154d45-bebc-4f2e-a802-b46f1d1ce7a6")
+		(uuid "580c96de-af1e-45da-9843-731c5cbc7a4a")
 	)
 	(fp_rect
-		(start 3.000 -9.560)
-		(end 33.000 1.940)
+		(start 3.400 -9.560)
+		(end 33.400 1.940)
 		(stroke
 			(width 0.1)
 			(type solid)
 		)
 		(fill no)
 		(layer "Dwgs.User")
-		(uuid "050c69d4-8faf-4519-bdf2-4101d3e8f497")
+		(uuid "b35375ee-9a6b-4c58-871b-5e05b3325cec")
 	)
 	(fp_rect
-		(start 4.110 -7.300)
-		(end 28.490 0.280)
+		(start 4.510 -7.300)
+		(end 28.890 0.280)
 		(stroke
 			(width 0.1)
 			(type solid)
 		)
 		(fill no)
 		(layer "Dwgs.User")
-		(uuid "53469b4e-a386-4738-95a4-9f36845fa950")
+		(uuid "01f80c57-40ca-4e8a-87a5-3b88a667a26d")
 	)
 	(fp_rect
-		(start 5.110 -6.300)
-		(end 27.490 -0.720)
+		(start 5.510 -6.300)
+		(end 27.890 -0.720)
 		(stroke
 			(width 0.1)
 			(type solid)
 		)
 		(fill no)
 		(layer "Dwgs.User")
-		(uuid "5f1fe828-cb1b-43fa-8110-ecbe7af514df")
+		(uuid "8f0b2874-14b9-4b49-97e8-f15beb4838d9")
 	)
 	(fp_text user "V.A 24.38x7.58"
-		(at 16.300 -3.510 0)
+		(at 16.700 -3.510 0)
 		(layer "Dwgs.User")
-		(uuid "b2300969-1c46-403b-b1e9-e44aad265f26")
+		(uuid "f2a4f837-a845-430b-8409-2890087a8a42")
 		(effects
 			(font
 				(size 0.8 0.8)
@@ -132,7 +121,7 @@
 	(fp_text user "pin1 GND"
 		(at -0.000 2.600 0)
 		(layer "F.Fab")
-		(uuid "04b06036-3244-4dfe-b193-8d36bfc49b05")
+		(uuid "cde0f402-4bc3-4d9b-83e7-164b512ea9c1")
 		(effects
 			(font
 				(size 0.7 0.7)
@@ -146,7 +135,7 @@
 		(drill 1)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
-		(uuid "3604875a-67d9-4218-810b-c1057a83eb7e")
+		(uuid "6145fb32-7ce8-4eb3-b2ab-0a405b392198")
 	)
 	(pad "2" thru_hole circle
 		(at 0 -2.54)
@@ -154,7 +143,7 @@
 		(drill 1)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
-		(uuid "c950da32-a562-4b99-8252-4765ceaaf02f")
+		(uuid "af50c964-6855-4465-92c4-e5d4414658ea")
 	)
 	(pad "3" thru_hole circle
 		(at 0 -5.08)
@@ -162,7 +151,7 @@
 		(drill 1)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
-		(uuid "df71c371-eff0-4c5e-b397-ecc575961422")
+		(uuid "38866c60-427c-474d-8302-31014de784c9")
 	)
 	(pad "4" thru_hole circle
 		(at 0 -7.62)
@@ -170,7 +159,7 @@
 		(drill 1)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
-		(uuid "0d00f903-988b-4b01-bac1-b6cd497dfb8f")
+		(uuid "08937cab-f9f8-451c-856c-4d8d224604b7")
 	)
 	(embedded_fonts no)
 )
