@@ -1,0 +1,176 @@
+(footprint "OLED_0.91in_I2C_Header"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(descr "0.91 inch 128x32 I2C OLED module (PCB 38x12 mm), 4-pin header P2.54, pin 1 = GND (square pad). Module drawn from the display side with the pins at the left end. Dwgs.User shows glass, V.A and A.A.")
+	(tags "OLED SSD1306 0.91 I2C module header")
+	(property "Reference" "REF**"
+		(at 17 -11.31 0)
+		(layer "F.SilkS")
+		(uuid "ade51ac9-658c-4ca1-8343-049b03a769ec")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "OLED_0.91in_I2C_Header"
+		(at 17 3.69 0)
+		(layer "F.Fab")
+		(uuid "1d23765b-4dcc-4893-9bee-f26d22864d67")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "9c773679-f3e1-4381-8ffb-a531aca71d0e")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" "0.91in 128x32 I2C OLED module on a 1x4 header"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "c97e3e2d-4665-4c26-b6da-979470b88401")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole)
+	(fp_rect
+		(start -2.000 -9.810)
+		(end 36.000 2.190)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "e3f5dd5b-5a88-45ff-8378-905755f126ef")
+	)
+	(fp_rect
+		(start -2.000 -9.810)
+		(end 36.000 2.190)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "0c832f9e-af9c-4bad-99f8-93d14c5c43ca")
+	)
+	(fp_rect
+		(start -2.500 -10.310)
+		(end 36.500 2.690)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "ae154d45-bebc-4f2e-a802-b46f1d1ce7a6")
+	)
+	(fp_rect
+		(start 3.000 -9.560)
+		(end 33.000 1.940)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "Dwgs.User")
+		(uuid "050c69d4-8faf-4519-bdf2-4101d3e8f497")
+	)
+	(fp_rect
+		(start 4.110 -7.300)
+		(end 28.490 0.280)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "Dwgs.User")
+		(uuid "53469b4e-a386-4738-95a4-9f36845fa950")
+	)
+	(fp_rect
+		(start 5.110 -6.300)
+		(end 27.490 -0.720)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "Dwgs.User")
+		(uuid "5f1fe828-cb1b-43fa-8110-ecbe7af514df")
+	)
+	(fp_text user "V.A 24.38x7.58"
+		(at 16.300 -3.510 0)
+		(layer "Dwgs.User")
+		(uuid "b2300969-1c46-403b-b1e9-e44aad265f26")
+		(effects
+			(font
+				(size 0.8 0.8)
+				(thickness 0.1)
+			)
+		)
+	)
+	(fp_text user "pin1 GND"
+		(at -0.000 2.600 0)
+		(layer "F.Fab")
+		(uuid "04b06036-3244-4dfe-b193-8d36bfc49b05")
+		(effects
+			(font
+				(size 0.7 0.7)
+				(thickness 0.1)
+			)
+		)
+	)
+	(pad "1" thru_hole rect
+		(at 0 -0)
+		(size 1.7 1.7)
+		(drill 1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "3604875a-67d9-4218-810b-c1057a83eb7e")
+	)
+	(pad "2" thru_hole circle
+		(at 0 -2.54)
+		(size 1.7 1.7)
+		(drill 1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "c950da32-a562-4b99-8252-4765ceaaf02f")
+	)
+	(pad "3" thru_hole circle
+		(at 0 -5.08)
+		(size 1.7 1.7)
+		(drill 1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "df71c371-eff0-4c5e-b397-ecc575961422")
+	)
+	(pad "4" thru_hole circle
+		(at 0 -7.62)
+		(size 1.7 1.7)
+		(drill 1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "0d00f903-988b-4b01-bac1-b6cd497dfb8f")
+	)
+	(embedded_fonts no)
+)

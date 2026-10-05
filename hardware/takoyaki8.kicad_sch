@@ -6492,7 +6492,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
+		(property "Footprint" "takoyaki8:OLED_0.91in_I2C_Header"
 			(at 45.72 134.62 0)
 			(hide yes)
 			(show_name no)
