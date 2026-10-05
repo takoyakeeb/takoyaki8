@@ -3478,7 +3478,7 @@
 				)
 			)
 		)
-		(property "Footprint" "takoyaki8:RP2040-Zero_Castellated"
+		(property "Footprint" "takoyaki8:RP2040-Zero_Castellated_Flipped"
 			(at 53.34 76.2 0)
 			(hide yes)
 			(show_name no)
