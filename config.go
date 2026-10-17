@@ -12,7 +12,7 @@ import (
 const (
 	deviceName      = "takoyaki8"
 	protocolVersion = 1       // tinykeemap の docs/protocol.md の proto と同じ値
-	firmwareVersion = "0.4.0" // ファームウェアのバージョン
+	firmwareVersion = "0.4.1" // ファームウェアのバージョン
 )
 
 // ===== ピン割り当て(COL2ROW) =====
@@ -36,14 +36,15 @@ const debounceCount = 5
 
 // ===== LED(WS2812B)の設定 =====
 const (
-	NumLEDs = 10 // つないだ LED の数
+	NumLEDs = 4 // つないだ LED の数(基板 rev1.0 は4個)
 
-	// 明るさの上限(0〜255)。32 は約12%で、10個を白で全灯しても約80mA程度。
+	// 明るさの上限(0〜255)。32 は約12%で、4個を白で全灯しても約30mA程度。
 	ledLevel = 32
 
 	// LED の表示を更新する間隔。メインループ(約1ms)が何回まわるたびに1回更新するか。
 	// 20 なら約20msごと。1 にすると毎回更新する(いちばん厳しい確認用)。
-	ledEveryLoops = 20
+	// 100 なら約0.1秒ごと。LED が4個のとき、1つずつ点くのを目で追える速さ。
+	ledEveryLoops = 100
 )
 
 // ===== OLED(SSD1306、128x32、I2C)の設定 =====

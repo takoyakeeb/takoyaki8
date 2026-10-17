@@ -15,6 +15,24 @@ const (
 	KC_G           uint16 = 0x000A
 	KC_H           uint16 = 0x000B
 
+	// 初期キーマップで使う、そのほかの基本キー(値は USB HID Usage ID)
+	KC_M     uint16 = 0x0010
+	KC_P     uint16 = 0x0013
+	KC_TAB   uint16 = 0x002B
+	KC_F11   uint16 = 0x0044
+	KC_RIGHT uint16 = 0x004F // →
+	KC_LEFT  uint16 = 0x0050 // ←
+	KC_DOWN  uint16 = 0x0051 // ↓
+	KC_UP    uint16 = 0x0052 // ↑
+
+	// 修飾キー付きのキーコードを作るための印。基本キーと「|」(ビットの OR)で組み合わせる。
+	// 例: ⌘+Tab = MOD_LGUI | KC_TAB(= 0x082B)。複数の修飾キーも | でつなげる。
+	// 値は hid.go の decodeKey と同じ(ビット8〜11が Ctrl / Shift / Alt / GUI。左側)。
+	MOD_LCTL uint16 = 0x0100 // 左 Ctrl
+	MOD_LSFT uint16 = 0x0200 // 左 Shift
+	MOD_LALT uint16 = 0x0400 // 左 Alt(Mac の option)
+	MOD_LGUI uint16 = 0x0800 // 左 GUI(Mac の ⌘ / Windows キー)
+
 	// 修飾キー単体(USB HID Usage ID の 0xE0〜0xE7。並びは hid.go の modifierKeys と同じにすること)
 	KC_LCTL uint16 = 0x00E0 // 左 Ctrl
 	KC_LSFT uint16 = 0x00E1 // 左 Shift

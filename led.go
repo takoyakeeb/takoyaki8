@@ -14,10 +14,10 @@ import (
 )
 
 var (
-	ledDev    ws2812.Device        // ドライバ(これを通して LED に色を送る)
-	ledColors [NumLEDs]color.RGBA // 10個ぶんの色。送る前にここへ書き込む
-	ledPos    int                  // 白い点がいる LED の番号
-	ledTicks  int                  // メインループが何回まわったか(ledEveryLoops に達したら更新して0に戻す)
+	ledDev    ws2812.Device       // ドライバ(これを通して LED に色を送る)
+	ledColors [NumLEDs]color.RGBA // NumLEDs 個ぶんの色。送る前にここへ書き込む
+	ledPos    int                 // 白い点がいる LED の番号
+	ledTicks  int                 // メインループが何回まわったか(ledEveryLoops に達したら更新して0に戻す)
 )
 
 // initLED は、データ線を出力にして、ドライバを作り、全部の LED を消す。
@@ -44,6 +44,6 @@ func tickLED() {
 	ledPos = (ledPos + 1) % NumLEDs
 	ledColors[ledPos] = color.RGBA{R: ledLevel, G: ledLevel, B: ledLevel, A: 255}
 
-	// 10個ぶんまとめて LED に送る。この間(約0.3ms)は割り込みが止まる場合がある
+	// NumLEDs 個ぶんまとめて LED に送る。この間(1個あたり約30μs。4個なら約0.12ms)は割り込みが止まる場合がある
 	ledDev.WriteColors(ledColors[:])
 }
