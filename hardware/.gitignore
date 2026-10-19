@@ -6,3 +6,6 @@ fp-info-cache
 ~*
 *.lck
 .history/
+
+# Gerber(KiCad が書き出す生成物。配布は GitHub のリリースで行う)
+gerber/
