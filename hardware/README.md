@@ -20,7 +20,7 @@ SPDX-License-Identifier: CERN-OHL-P-2.0
 | `lib/` | 自作のシンボル(RP2040-Zero)とフットプリント。出典と、寸法の確認は、`lib/README.md` を見てください |
 | `case/` | ケース(アクリル)の寸法メモと、入稿用の図面(SVG)を作るスクリプト。くわしくは、`case/README.md` を見てください |
 | `case-3d/` | 3D プリントのケース(バンパー)。FreeCAD の元データ(`bumper.FCStd`)、`bumper.step`、`bumper.stl`。くわしくは、下の「バンパー(3D プリント)」を見てください |
-| `gerber/` | KiCad から書き出した Gerber の置き場所。リポジトリには含めていません(`.gitignore`)。配布は、GitHub のリリースで行う予定です(準備中) |
+| `gerber/` | KiCad から書き出した Gerber の置き場所。リポジトリには含めていません(`.gitignore`)。配布は、GitHub のリリース `hw-rev1.0` で行っています |
 
 ## 基板
 
