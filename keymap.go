@@ -5,34 +5,35 @@ package main
 type Keymap [NumLayers][NumKeys]uint16
 
 // defaultKeymap は、初期のキーマップを作って返す。
-// レイヤー0(MacOS の操作)とレイヤー1(Google Meet)だけ設定し、
+// レイヤー0(MacOS の操作)とレイヤー1(編集とスクリーンショット)だけ設定し、
 // レイヤー2・3は「透過」(何も設定していない = 下のレイヤーと同じ)にする。
 // キー番号は、左上から右へ 0〜3、下の行が 4〜7(基板の SW1〜SW8 と同じ並び)。
 // どちらのレイヤーも、キー0(左上)がもう一方のレイヤーへ移るキー。
 // RESET コマンドや、Flashに有効なデータがないときに使う。
+// OLED に出すレイヤーの名前は oled.go の oledLayerNames(ここを変えたら、名前も合わせる)。
 func defaultKeymap() Keymap {
 	km := Keymap{
-		// レイヤー0: MacOS(ウィンドウ・デスクトップの操作)
+		// レイヤー0: MacOS(上の行 = ウィンドウの切り替え、下の行 = デスクトップの切り替え)
 		{
-			QK_TO | 1,                    // 0: レイヤー1(Meet)へ移る
+			QK_TO | 1,                    // 0: レイヤー1(編集・スクリーンショット)へ移る
 			MOD_LGUI | MOD_LSFT | KC_TAB, // 1: ⌘+Shift+Tab(アプリを逆順で切り替え)
 			MOD_LGUI | KC_TAB,            // 2: ⌘+Tab(アプリを切り替え)
-			MOD_LCTL | KC_UP,             // 3: Ctrl+↑(Mission Control)
+			MOD_LCTL | KC_DOWN,           // 3: Ctrl+↓(アプリのウィンドウ一覧)
 			KC_F11,                       // 4: F11(デスクトップを表示)
 			MOD_LCTL | KC_LEFT,           // 5: Ctrl+←(前のデスクトップ)
 			MOD_LCTL | KC_RIGHT,          // 6: Ctrl+→(次のデスクトップ)
-			MOD_LCTL | KC_DOWN,           // 7: Ctrl+↓(アプリのウィンドウ一覧)
+			MOD_LCTL | KC_UP,             // 7: Ctrl+↑(Mission Control)
 		},
-		// レイヤー1: Google Meet(Mac)
+		// レイヤー1: 編集とスクリーンショット(Mac)。上の行 = スクリーンショット、下の行 = 編集
 		{
 			QK_TO | 0,                  // 0: レイヤー0(MacOS)へ戻る
-			MOD_LCTL | MOD_LGUI | KC_H, // 1: Ctrl+⌘+H(挙手)
-			MOD_LGUI | KC_D,            // 2: ⌘+D(マイクのミュート切り替え)
-			MOD_LGUI | KC_E,            // 3: ⌘+E(カメラのオン・オフ)
-			MOD_LCTL | MOD_LGUI | KC_C, // 4: Ctrl+⌘+C(チャット)
-			MOD_LCTL | MOD_LGUI | KC_P, // 5: Ctrl+⌘+P(参加者)
-			MOD_LCTL | MOD_LGUI | KC_M, // 6: Ctrl+⌘+M(自分の動画を最小化・拡大)
-			MOD_LSFT | KC_M,            // 7: Shift+M(ピクチャインピクチャ)
+			MOD_LGUI | MOD_LSFT | KC_3, // 1: ⌘+Shift+3(画面全体のスクリーンショット)
+			MOD_LGUI | MOD_LSFT | KC_4, // 2: ⌘+Shift+4(範囲を選んでスクリーンショット)
+			MOD_LGUI | MOD_LSFT | KC_5, // 3: ⌘+Shift+5(スクリーンショットのメニュー)
+			MOD_LGUI | KC_Z,            // 4: ⌘+Z(元に戻す)
+			MOD_LGUI | KC_X,            // 5: ⌘+X(切り取り)
+			MOD_LGUI | KC_C,            // 6: ⌘+C(コピー)
+			MOD_LGUI | KC_V,            // 7: ⌘+V(ペースト)
 		},
 	}
 	for l := 2; l < NumLayers; l++ {
