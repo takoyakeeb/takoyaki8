@@ -18,6 +18,12 @@ const (
 	// 初期キーマップで使う、そのほかの基本キー(値は USB HID Usage ID)
 	KC_M     uint16 = 0x0010
 	KC_P     uint16 = 0x0013
+	KC_V     uint16 = 0x0019
+	KC_X     uint16 = 0x001B
+	KC_Z     uint16 = 0x001D
+	KC_3     uint16 = 0x0020
+	KC_4     uint16 = 0x0021
+	KC_5     uint16 = 0x0022
 	KC_TAB   uint16 = 0x002B
 	KC_F11   uint16 = 0x0044
 	KC_RIGHT uint16 = 0x004F // →

@@ -78,3 +78,16 @@ func activeLayers() uint32 {
 	}
 	return active
 }
+
+// currentLayer は、いま「いちばん上」の有効なレイヤーの番号を返す。
+// keymap.Lookup が最初に見るレイヤーと同じ決め方(番号の大きい有効なレイヤー)。
+// OLED の表示に使う。
+func currentLayer() int {
+	active := activeLayers()
+	for l := NumLayers - 1; l > 0; l-- {
+		if active&(1<<uint(l)) != 0 {
+			return l
+		}
+	}
+	return 0
+}
