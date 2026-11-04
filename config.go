@@ -80,5 +80,6 @@ func Info() string {
 		" cols=" + strconv.Itoa(NumCols) +
 		" layers=" + strconv.Itoa(NumLayers) +
 		" cfg=1" + // 設定(CFG コマンド)に対応している
-		" lname=" + strconv.Itoa(cfgLnameMax) // レイヤー名の最大の文字数(cfg.go)
+		" lname=" + strconv.Itoa(cfgLnameMax) + // レイヤー名の最大の文字数(cfg.go)
+		" saved=" + savedFlag() // 電源を入れ直しても同じ状態なら 1(state.go)
 }

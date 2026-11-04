@@ -29,6 +29,9 @@ func main() {
 	// 設定(cfg.go)を読む。Flashに有効な設定があればそれを、なければ初期値を使う
 	initCfg()
 
+	// 「起動時に使われるもの」の控えを作る(INFO の saved の判定に使う。state.go)
+	markBoot()
+
 	// 押した時に送ったキーを覚えておき、離す時に同じものを離す(0は「送っていない」)
 	// SET でキーマップを書き換えても、押している最中のキーは元のキーを離すので、押しっぱなしにならない
 	var held [NumKeys]usbkbd.Keycode

@@ -89,25 +89,16 @@ func handleCommand(line string) string {
 		if len(f) != 1 {
 			return usageError("SAVE")
 		}
-		// 現在のキーマップをFlashに保存する。消去を伴うので少し時間がかかる。
-		if err := saveKeymapToFlash(&keymap); err != nil {
-			return "ERR FLASH " + err.Error()
-		}
-		return "OK"
+		// キーマップと設定を、Flashに保存する。変わったほうだけ書く(state.go)。消去を伴うので少し時間がかかる。
+		return doSave()
 
 	case "LOAD":
 		if len(f) != 1 {
 			return usageError("LOAD")
 		}
-		// Flashの内容を読み直す。未保存の変更は捨てる。
-		// Flashの内容が無効なときは、RAMのキーマップを変えずにエラーを返す。
-		km, err := loadKeymapFromFlash()
-		if err != nil {
-			return "ERR FLASH " + err.Error()
-		}
-		keymap = km
-		resetLayerState() // キーマップが入れ替わったので、TG / TO の状態は解除する(protocol.md §3)
-		return "OK"
+		// キーマップと設定を、起動したときと同じ状態に戻す(state.go)。未保存の変更は捨てる。
+		// Flashが空(未保存)でも、エラーにはしない(初期値に戻る)。
+		return doLoad()
 
 	case "CFG":
 		return handleCfg(f)
