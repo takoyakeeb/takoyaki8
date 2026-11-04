@@ -202,6 +202,9 @@ func validKeycode(code uint16) bool {
 	if code == KC_NO || code == KC_TRANSPARENT {
 		return true
 	}
+	if code == QK_LAYER_NEXT || code == QK_LAYER_PREV { // 次・前のレイヤー
+		return true
+	}
 	if _, _, ok := decodeLayerKey(code); ok {
 		return true
 	}

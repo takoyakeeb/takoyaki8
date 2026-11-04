@@ -54,4 +54,9 @@ const (
 	QK_MOMENTARY    uint16 = 0x5220 // MO(n): 押している間だけレイヤー n を有効にする(n は下位5bit)
 	QK_TOGGLE_LAYER uint16 = 0x5260 // TG(n): 押すたびにレイヤー n の有効・無効を切り替える(n は下位5bit)
 	QK_LAYER_MASK   uint16 = 0x001F // レイヤー切り替えの keycode から、レイヤー番号 n だけを取り出すための印(下位5bit)
+
+	// 次・前のレイヤー(takoyaki8 独自。QMK の「キーボード専用」の範囲 QK_KB = 0x7E00〜0x7E3F の先頭2つ。QK_KB_0・QK_KB_1)。
+	// 土台のレイヤーを1つ進める・戻す。動きは layer.go(段階4b)。
+	QK_LAYER_NEXT uint16 = 0x7E00 // 次のレイヤー
+	QK_LAYER_PREV uint16 = 0x7E01 // 前のレイヤー
 )
