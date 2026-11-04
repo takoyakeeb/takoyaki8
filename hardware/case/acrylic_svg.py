@@ -4,6 +4,9 @@
 彫刻は「基板に向いた内側の面」なので、ボトムは上面(上から見た向き)、カバーは下面(左右反転)を上にして書き出す。
 必要なパッケージ: pip install numpy pillow opencv-python-headless matplotlib
 使い方: python3 acrylic_svg.py --pcb takoyaki8.kicad_pcb --sheet 15x30 --out acrylic_15x30.svg
+1セット分(ボトム1枚 + カバーC1を1枚。図面の大きさは、部品の外側 + 上下左右3mm):
+  python3 acrylic_svg.py --pcb takoyaki8.kicad_pcb --layout layout_set1.json --size auto --art art/acrylic_bottom4.svg --logo art/TakoyaKeeb_logo.svg --out takoyaki8_acrylic_set1.svg
+  python3 export_formats.py takoyaki8_acrylic_set1.svg    # DXF と PDF(PDF は Inkscape が必要)
 """
 import argparse, math, re, sys
 import numpy as np
@@ -350,10 +353,12 @@ def part_cover(xr, slot, text_polys):
     eng = [('frost', pd([[(xr - px, py - COVER_BOX[1]) for px, py in q] for q in frost]))]
     return dict(w=w, h=h, cut=cut, eng=eng)
 
-def build_layout(pcb, art, logo, layout_json):
+def build_layout(pcb, art, logo, layout_json, size=(300, 300)):
     import json
     parts = json.load(open(layout_json, encoding='utf-8'))
-    W = H = 300
+    if size == 'auto':   # 部品の外側 + 上下左右 3mm
+        W = round(max(p['x'] + p['w'] for p in parts) + MARGIN, 3); H = round(max(p['y'] + p['h'] for p in parts) + MARGIN, 3)
+    else: W, H = size
     art_sub = load_art(art)[0]; text_polys = load_logo_svg(logo)
     P = part_plate(art_sub, boot_d=3.0, notch=3.0)
     CV = {'C1': part_cover(23.75, True, text_polys), 'C2': part_cover(24.5, False, text_polys)}
@@ -370,7 +375,7 @@ def build_layout(pcb, art, logo, layout_json):
                 x, y = f(d[0], d[1]); cut.append(('%s_%s' % (name, nm), 'circle', (x, y, d[2])))
         for nm, d in base['eng']: eng.append(('%s_%s' % (name, nm), tf_d(d, f)))
     L = ['<?xml version="1.0" encoding="UTF-8"?>',
-         '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="%dmm" height="%dmm" viewBox="0 0 %d %d">' % (W, H, W, H),
+         '<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="%smm" height="%smm" viewBox="0 0 %s %s">' % (fmt(W), fmt(H), fmt(W), fmt(H)),
          '<g id="cut" inkscape:groupmode="layer" inkscape:label="cut(赤1pt)" fill="none" stroke="#ff0000" stroke-width="%.4f">' % PT]
     for nm, kind, d in cut:
         L.append('<path id="%s" d="%s"/>' % (nm, d) if kind == 'path' else '<circle id="%s" cx="%s" cy="%s" r="%s"/>' % (nm, fmt(d[0]), fmt(d[1]), fmt(d[2])))
@@ -381,9 +386,9 @@ def build_layout(pcb, art, logo, layout_json):
     return '\n'.join(L), n
 
 if __name__ == '__main__':
-    ap = argparse.ArgumentParser(); ap.add_argument('--pcb', required=True); ap.add_argument('--sheet', default='15x30', choices=['15x30', '30x30']); ap.add_argument('--art', help='ボトムに入れるイラストのSVG(下から見た向き。P?_outline入りの図)'); ap.add_argument('--layout', help='配置のJSON(30×30用の15:15配置)'); ap.add_argument('--logo', help='カバーの抜き文字のSVG(TakoyaKeeb_logo.svg)'); ap.add_argument('--out', required=True)
+    ap = argparse.ArgumentParser(); ap.add_argument('--pcb', required=True); ap.add_argument('--sheet', default='15x30', choices=['15x30', '30x30']); ap.add_argument('--art', help='ボトムに入れるイラストのSVG(下から見た向き。P?_outline入りの図)'); ap.add_argument('--layout', help='配置のJSON(30×30用の15:15配置。1セット分は layout_set1.json)'); ap.add_argument('--size', default='300x300', help='--layout のときの図面の大きさ(mm。例: 300x300。auto なら、部品の外側 + 上下左右 3mm)'); ap.add_argument('--logo', help='カバーの抜き文字のSVG(TakoyaKeeb_logo.svg)'); ap.add_argument('--out', required=True)
     a = ap.parse_args()
     if a.layout:
-        svg, n = build_layout(a.pcb, a.art, a.logo, a.layout); open(a.out, 'w', encoding='utf-8').write(svg); print('書き出し:', a.out, n); raise SystemExit
+        svg, n = build_layout(a.pcb, a.art, a.logo, a.layout, ('auto' if a.size == 'auto' else tuple(int(v) for v in a.size.lower().split('x')))); open(a.out, 'w', encoding='utf-8').write(svg); print('書き出し:', a.out, n); raise SystemExit
     svg, W, H, items = build(a.pcb, a.sheet, a.art)
     open(a.out, 'w', encoding='utf-8').write(svg); print('書き出し:', a.out, '(%dx%dmm, %d部品)' % (W, H, len(items)))
