@@ -84,7 +84,7 @@ func buildCfgDefs() {
 		cfgDefs = append(cfgDefs, cfgDef{"lname" + strconv.Itoa(l), lnameDefaults[l], cfgName})
 	}
 	cfgDefs = append(cfgDefs,
-		cfgDef{"led", "13", cfgPercent}, // 仮。いまの ledLevel(32/255)に近い値
+		cfgDef{"led", "50", cfgPercent}, // 仮。段階8で決め直す(2乗の補正で、ledMaxLevel の1/4 = 32 になる値。fw 0.4.2 までの明るさ)
 		cfgDef{"led_mode", "layer", cfgWord},
 	)
 	for l := 0; l < NumLayers; l++ {
