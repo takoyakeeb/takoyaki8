@@ -17,9 +17,19 @@ SPDX-License-Identifier: CERN-OHL-P-2.0
 | `takoyaki8.kicad_pro`、`takoyaki8.kicad_sch`、`takoyaki8.kicad_pcb` | KiCad のプロジェクト、回路図、基板。KiCad 10.0 で作成(古い版では、開けないことがあります) |
 | `fp-lib-table`、`sym-lib-table` | ライブラリの表。自作ライブラリ(`lib/`)を指します |
 | `lib/` | 自作のシンボル(RP2040-Zero)とフットプリント。出典と寸法は、`lib/README.md` |
-| `case/` | ケース(アクリル)の寸法メモ(`README.md`)、入稿用の図面(SVG)を作るスクリプト(`acrylic_svg.py`)とその検算(`check_acrylic_svg.py`)、配置データ(`layout_30x30_v2.json`)、ロゴなどの素材(`art/`)。スクリプトは、複数セット分を並べた図面を作ります(1セット分の図面は、まだ出せません) |
+| `case/` | ケース(アクリル)の寸法メモ(`README.md`)、図面を作るスクリプト(`acrylic_svg.py`、`export_formats.py`)とその検算(`check_acrylic_svg.py`。複数セット分の図面用)、配置データ(1台分は `layout_set1.json`、複数セット分は `layout_30x30_v2.json`)、1台分の図面(`drawings/`)、ロゴなどの素材(`art/`) |
 | `case-3d/` | 3D プリントのケース(バンパー)。FreeCAD の元データ(`bumper.FCStd`)、`bumper.step`、`bumper.stl`。説明は、下の「バンパー」 |
 | `gerber/` | KiCad から書き出した Gerber の置き場所(書き出しの設定は、プロジェクトに保存済み)。リポジトリには含めません(`.gitignore`)。配布は、GitHub のリリース `hw-rev1.0` |
+
+## ケースの図面(アクリル)
+
+1台分(ボトムプレート1枚と、OLED カバー C1 を1枚)の図面は、`case/drawings/` にあります。SVG・PDF・DXF の中身は同じで、大きさは 105.9 × 72.3mm です。
+
+- SVG・PDF: 赤い線が切る線(1pt)、黒の塗りが彫刻です。
+- DXF: 単位は mm。レイヤー `CUT` が切る線、`ENGRAVE` が彫刻の輪郭です。
+- 彫刻は、基板側(内側)の面に入れるので、文字は鏡文字になっています。
+- 材料の板の大きさには、合わせていません。複数セットを1枚に並べるときは、`layout_30x30_v2.json` を使います。
+- 作り直す手順は、`case/acrylic_svg.py` の冒頭に書いてあります。
 
 ## 基板
 
