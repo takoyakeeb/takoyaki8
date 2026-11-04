@@ -21,7 +21,7 @@ const (
 	cfgHeaderSize    = 7    // マジック4 + 版1 + 文字の長さ2
 	cfgBufSize       = 1024 // 書き込みバッファ。256の倍数(書き込みの単位)にすること
 	cfgMaxEntries    = 32   // 設定の最大の個数(知らない名前も含む)
-	cfgLnameMax      = 6    // レイヤー名の最大の文字数(仮。段階6で、OLED に実際に出して確かめる)
+	cfgLnameMax      = 5    // レイヤー名の最大の文字数。縦置きの OLED(幅32ドット)に、5文字(幅29)まで収まる(6文字は35で、収まらない)
 )
 
 // 1セクタ(4096)に収まらなくなったら、コンパイルエラーにする。
@@ -60,6 +60,20 @@ var (
 	cfgSource string     // 起動時に何を使ったか("flash" か "default:理由")。診断用
 )
 
+// レイヤー名の初期値(L0 = MAC、L1 = EDIT。それ以外は空)。
+// キーマップの初期値(keymap.go)に合わせた名前。空の名前は、OLED に名前を出さない。
+var lnameDefaults = [NumLayers]string{"MAC", "EDIT", "", ""}
+
+// layerName は、レイヤー l の名前(設定の lname<l>)を返す。OLED の表示に使う。
+// cfgNow の先頭は、cfgBuild が表の順(lname0 〜 lname<NumLayers-1>)に並べるので、位置 l がそのまま lname<l>。
+// (文字をつなげて名前を探すと、毎回メモリを使うので、位置で引く)
+func layerName(l int) string {
+	if l < 0 || l >= NumLayers || l >= len(cfgNow) {
+		return ""
+	}
+	return cfgNow[l].value
+}
+
 // レイヤーごとの色の初期値(仮。段階8の実機で決め直す)
 var lcolorDefaults = [NumLayers]string{"2060FF", "FF8000", "20FF40", "FF2080"}
 
@@ -67,8 +81,7 @@ var lcolorDefaults = [NumLayers]string{"2060FF", "FF8000", "20FF40", "FF2080"}
 func buildCfgDefs() {
 	cfgDefs = cfgDefs[:0]
 	for l := 0; l < NumLayers; l++ {
-		// レイヤー名の初期値は、oled.go の表(L0 = MAC、L1 = EDIT。それ以外は空)
-		cfgDefs = append(cfgDefs, cfgDef{"lname" + strconv.Itoa(l), oledLayerNames[l], cfgName})
+		cfgDefs = append(cfgDefs, cfgDef{"lname" + strconv.Itoa(l), lnameDefaults[l], cfgName})
 	}
 	cfgDefs = append(cfgDefs,
 		cfgDef{"led", "13", cfgPercent}, // 仮。いまの ledLevel(32/255)に近い値
