@@ -5,6 +5,7 @@ package main
 // 設定(cfg.go)で動きを決める。
 //   led_mode: 効果の名前。
 //     layer … 4個とも、いまのレイヤー(currentLayer)の色で点灯する(初期値)。
+//     breathe … 4個とも、いまのレイヤーの色で、ゆっくり明るくなったり暗くなったりする。
 //     press … 何もしていないときは消灯。キーを押すと、4個とも、いまのレイヤーの色で光って、少しして消える。
 //     off   … 消灯。
 //     test  … 白い点が、端から端まで動き続ける(配線の診断用。tinykeemap の画面には出さない)。
@@ -29,6 +30,8 @@ var (
 	ledTicks  int                 // メインループが何回まわったか(ledWait に達したら更新して0に戻す)
 	ledWait   = ledEveryLoops    // 次の更新までに、メインループが何回まわるか(press で光っているあいだだけ、短くなる)
 
+	ledEpoch time.Time // breathe: 起動した時刻(ここからの時間で、明るさを決める)
+
 	ledPressed bool      // press: キーを押してから、まだ消えていなければ true
 	ledPressAt time.Time // press: 最後にキーを押した時刻
 )
@@ -38,6 +41,7 @@ func initLED() {
 	pin := pinLED
 	pin.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	ledDev = ws2812.NewWS2812(pin)
+	ledEpoch = time.Now()
 
 	// ledColors は最初、全部 0(消灯)なので、そのまま送ると全部消える
 	ledDev.WriteColors(ledColors[:])
@@ -114,6 +118,23 @@ func ledPressFade() int {
 	return int(255 - int64(el)*255/int64(dur))
 }
 
+// ledBreatheFactor は、breathe の明るさ(0〜255)を返す。ledBreathePeriodMs で1周する。
+// 三角波(上がって下がる)を、smoothstep(なめらかな S 字)で丸めて、いちばん暗いときも ledBreatheMinPct % を残す。
+func ledBreatheFactor() int {
+	period := int64(ledBreathePeriodMs)
+	phase := int64(time.Since(ledEpoch)/time.Millisecond) % period
+	half := period / 2
+	var t int64 // 三角波(0〜255)
+	if phase < half {
+		t = phase * 255 / half
+	} else {
+		t = (period - phase) * 255 / half
+	}
+	s := t * t * (3*255 - 2*t) / (255 * 255) // smoothstep。0〜255
+	floor := int64(ledBreatheMinPct) * 255 / 100
+	return int(floor + (255-floor)*s/255)
+}
+
 // tickLED は、メインループから毎回呼ばれる。
 // ledWait 回に1回だけ、設定にしたがって色を決めて、LED に送る。
 func tickLED() {
@@ -134,10 +155,16 @@ func tickLED() {
 	switch mode {
 	case "off":
 		// 消灯のまま
+	case "breathe":
+		ledWait = ledFastLoops
+		c := ledScale(ledLayerColor(currentLayer()), uint8(int(level)*ledBreatheFactor()/255))
+		for i := range ledColors {
+			ledColors[i] = c
+		}
 	case "press":
 		// 押してから消えるまで、レイヤーの色で、だんだん暗くする。何もないときは、消灯のまま
 		if fade := ledPressFade(); fade > 0 {
-			ledWait = ledPressFastLoops
+			ledWait = ledFastLoops
 			c := ledScale(ledLayerColor(currentLayer()), uint8(int(level)*fade/255))
 			for i := range ledColors {
 				ledColors[i] = c
