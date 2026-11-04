@@ -55,6 +55,8 @@ func main() {
 			}
 
 			if ev.Pressed {
+				ledKeyPressed() // LED の press 効果の合図(led.go)。どのキーでも、押したときに呼ぶ
+
 				// いま有効なレイヤーで、押したキーの keycode を決める
 				code := keymap.Lookup(activeLayers(), ev.ID)
 				if kind, layer, ok := decodeLayerKey(code); ok {

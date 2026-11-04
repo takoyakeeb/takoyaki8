@@ -5,6 +5,7 @@ package main
 // 設定(cfg.go)で動きを決める。
 //   led_mode: 効果の名前。
 //     layer … 4個とも、いまのレイヤー(currentLayer)の色で点灯する(初期値)。
+//     press … 何もしていないときは消灯。キーを押すと、4個とも、いまのレイヤーの色で光って、少しして消える。
 //     off   … 消灯。
 //     test  … 白い点が、端から端まで動き続ける(配線の診断用。tinykeemap の画面には出さない)。
 //     ファームが知らない名前は、layer と同じ動きにする。
@@ -16,6 +17,7 @@ import (
 	"image/color" // 色(赤・緑・青の値)を表す標準の型
 	"machine"
 	"strconv"
+	"time" // press の、光ってからの時間の計測に使う
 
 	"tinygo.org/x/drivers/ws2812" // WS2812 にデータを送るドライバ
 )
@@ -24,7 +26,11 @@ var (
 	ledDev    ws2812.Device       // ドライバ(これを通して LED に色を送る)
 	ledColors [NumLEDs]color.RGBA // NumLEDs 個ぶんの色。送る前にここへ書き込む
 	ledPos    int                 // test のとき、白い点がいる LED の番号
-	ledTicks  int                 // メインループが何回まわったか(ledEveryLoops に達したら更新して0に戻す)
+	ledTicks  int                 // メインループが何回まわったか(ledWait に達したら更新して0に戻す)
+	ledWait   = ledEveryLoops    // 次の更新までに、メインループが何回まわるか(press で光っているあいだだけ、短くなる)
+
+	ledPressed bool      // press: キーを押してから、まだ消えていなければ true
+	ledPressAt time.Time // press: 最後にキーを押した時刻
 )
 
 // initLED は、データ線を出力にして、ドライバを作り、全部の LED を消す。
@@ -85,14 +91,38 @@ func ledLayerColor(l int) color.RGBA {
 	return parseColor(v)
 }
 
+// ledKeyPressed は、キーを押したときに、メインループから呼ばれる(どのキーでも)。
+// press の効果の合図で、次の tickLED で、すぐ光らせる。
+func ledKeyPressed() {
+	ledPressed = true
+	ledPressAt = time.Now()
+	ledTicks = ledWait // 次の tickLED で、待たずに更新する
+}
+
+// ledPressFade は、press の光の強さ(0〜255)を返す。押した直後は 255 で、ledPressFadeMs かけて 0 になる。
+// 0 になったら、ledPressed を false にする。
+func ledPressFade() int {
+	if !ledPressed {
+		return 0
+	}
+	dur := time.Duration(ledPressFadeMs) * time.Millisecond
+	el := time.Since(ledPressAt)
+	if el >= dur {
+		ledPressed = false
+		return 0
+	}
+	return int(255 - int64(el)*255/int64(dur))
+}
+
 // tickLED は、メインループから毎回呼ばれる。
-// ledEveryLoops 回に1回だけ、設定にしたがって色を決めて、LED に送る。
+// ledWait 回に1回だけ、設定にしたがって色を決めて、LED に送る。
 func tickLED() {
 	ledTicks++
-	if ledTicks < ledEveryLoops {
+	if ledTicks < ledWait {
 		return
 	}
 	ledTicks = 0
+	ledWait = ledEveryLoops // press で光っているときだけ、下で短くする
 
 	level := ledLevelFor(cfgInt("led"))
 	mode, _ := cfgGet("led_mode")
@@ -104,6 +134,15 @@ func tickLED() {
 	switch mode {
 	case "off":
 		// 消灯のまま
+	case "press":
+		// 押してから消えるまで、レイヤーの色で、だんだん暗くする。何もないときは、消灯のまま
+		if fade := ledPressFade(); fade > 0 {
+			ledWait = ledPressFastLoops
+			c := ledScale(ledLayerColor(currentLayer()), uint8(int(level)*fade/255))
+			for i := range ledColors {
+				ledColors[i] = c
+			}
+		}
 	case "test":
 		ledPos = (ledPos + 1) % NumLEDs
 		ledColors[ledPos] = ledScale(color.RGBA{R: 255, G: 255, B: 255, A: 255}, level)
