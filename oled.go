@@ -3,8 +3,11 @@ package main
 // OLED(SSD1306、128x32、I2C)の表示。I2C1 を使う。ピンは config.go の pinSDA(GPIO14)/ pinSCL(GPIO15)。
 //
 // 表示するもの: いま「いちばん上」の有効なレイヤーの番号(大きく)と、短い名前(layer.go の currentLayer)。
-// 基板では縦置き(USB-C を上にして置く)なので、画面を90°回して、縦に見たときに読める向きで描く。
-// 描くときは、縦長の画面(幅32 x 高さ128)として座標を考え、oledPixel で実際の画面の座標に直す。
+// 向きは、設定 rotate(0 / 90 / 180 / 270)で決める。ボードを、USB-C が上の状態から、時計回りに何度回して置くか。
+//   0 = USB-C が上(縦長。初期値。いままでの向き)、90 = USB-C が右(横長。画面そのままの向き)、
+//   180 = USB-C が下(縦長)、270 = USB-C が左(横長)。
+// 描くときは、見える向きの画面(縦長なら幅32 x 高さ128、横長なら幅128 x 高さ32)として座標を考え、
+// oledPixel で実際の画面の座標に直す。
 // レイヤーの名前は、設定の lname0〜(cfg.go の layerName)から読む。CFG SET で変えると、すぐ画面に出る。
 // 明るさは、設定の oled(0〜100%)。0 は画面を消す(oledApplyLevel)。
 //
@@ -26,20 +29,24 @@ const (
 	oledWidth  = 128 // 画面の幅(ドット。実際の画面)
 	oledHeight = 32  // 画面の高さ(ドット。実際の画面)
 
-	// 縦長の画面として考えたときの大きさ(USB-C を上にして置いたとき)
-	oledLogicalW = oledHeight // 幅 32(高さは oledWidth の 128)
-
-	// 表示の位置と大きさ(縦長の画面の座標。文字は、左右の中央にそろえる)
+	// 表示の位置と大きさ(縦長の画面の座標。幅32 x 高さ128。文字は、左右の中央にそろえる)
 	oledLabelY     = 8  // 「LAYER」の上端の y
 	oledDigitY     = 34 // レイヤーの番号の上端の y
 	oledDigitScale = 5  // レイヤーの番号の拡大(5x7 の文字を5倍 = 幅25 x 高さ35)
 	oledNameY      = 88 // 短い名前の上端の y
 
+	// 横長の画面(幅128 x 高さ32)の表示。左に番号(大きく)、右に「LAYER」と名前。
+	oledLandDigitX     = 6  // 番号の左端の x
+	oledLandDigitY     = 2  // 番号の上端の y(5x7 の文字を4倍 = 幅20 x 高さ28)
+	oledLandDigitScale = 4  // 番号の拡大
+	oledLandTextX      = 32 // 右側の文字を置く場所の左端の x(幅は 128 - 32 = 96)
+	oledLandTextW      = 96 // 右側の文字を置く場所の幅
+	oledLandLabelY     = 3  // 「LAYER」の上端の y(名前があるとき)
+	oledLandNameY      = 11 // 名前の上端の y(3倍 = 高さ21。5文字で幅89)
+	oledLandNameScale  = 3  // 名前の拡大
+
 	// SSD1306 の「コントラスト」の命令(次に、0〜255 の値を1つ送る)。明るさは、これで変える。
 	oledCmdContrast = 0x81
-
-	// 画面を、180°回して表示する。上下が逆に見えたら true にする。
-	oledFlip = false
 
 	// 起動してから、OLED を使い始めるまでの待ち時間。
 	// 待っている間も、キーボードとしては動く(メインループは止めない)。
@@ -59,6 +66,7 @@ var (
 	oledTicks   int             // メインループが何回まわったか(oledEveryLoops に達したら更新して0に戻す)
 
 	oledLevelSent = -1 // 最後に OLED へ送った明るさ(%)。-1 は、まだ送っていない
+	oledRotate    = 0  // いま使っている向き(設定 rotate。画面を描くたびに読み直す)
 )
 
 var oledWhite = color.RGBA{R: 255, G: 255, B: 255, A: 255} // 点灯させる色
@@ -236,12 +244,13 @@ func oledDraw() {
 	}
 
 	l := currentLayer()
+	oledRotate = cfgInt("rotate") // 向きを変えても、次の更新で、画面全体が描き直される
 
 	oledDev.ClearBuffer()
-	oledDrawCentered(oledLabelY, "LAYER", 1)
-	oledDrawCentered(oledDigitY, string(rune('0'+l)), oledDigitScale) // NumLayers が10以上になったら、直すこと
-	if name := layerName(l); name != "" {
-		oledDrawCentered(oledNameY, name, 1)
+	if oledRotate == 90 || oledRotate == 270 {
+		oledDrawLandscape(l)
+	} else {
+		oledDrawPortrait(l)
 	}
 
 	start := time.Now()
@@ -285,15 +294,40 @@ func oledApplyLevel() bool {
 	return p > 0
 }
 
-// oledPixel は、縦長の画面(幅32 x 高さ128。USB-C を上にして置いたとき)の点(lx, ly)を、
-// 実際の画面(幅128 x 高さ32)の点に直して、点灯させる。
-// 実際の画面は、USB-C を右にしたときに読める向き。そこから、時計回りに90°回して使う。
+// oledPixel は、見える向きの画面の点(lx, ly)を、実際の画面(幅128 x 高さ32)の点に直して、点灯させる。
+// 実際の画面は、USB-C を右にしたときに読める向き(rotate = 90 と同じ)。
 func oledPixel(lx, ly int16) {
-	if oledFlip {
+	switch oledRotate {
+	case 90: // 横長。画面そのまま
+		oledDev.SetPixel(lx, ly, oledWhite)
+	case 270: // 横長。180°回す
+		oledDev.SetPixel(oledWidth-1-lx, oledHeight-1-ly, oledWhite)
+	case 180: // 縦長(幅32 x 高さ128)。USB-C が下
 		oledDev.SetPixel(ly, oledHeight-1-lx, oledWhite)
-		return
+	default: // 0: 縦長(幅32 x 高さ128)。USB-C が上
+		oledDev.SetPixel(oledWidth-1-ly, lx, oledWhite)
 	}
-	oledDev.SetPixel(oledWidth-1-ly, lx, oledWhite)
+}
+
+// oledDrawPortrait は、縦長の画面(rotate = 0 / 180)に、「LAYER」・番号・名前を描く。
+func oledDrawPortrait(l int) {
+	oledDrawCentered(oledLabelY, "LAYER", 1)
+	oledDrawCentered(oledDigitY, string(rune('0'+l)), oledDigitScale) // NumLayers が10以上になったら、直すこと
+	if name := layerName(l); name != "" {
+		oledDrawCentered(oledNameY, name, 1)
+	}
+}
+
+// oledDrawLandscape は、横長の画面(rotate = 90 / 270)に描く。左に番号、右に「LAYER」と名前。
+// 名前が空のときは、「LAYER」だけを、2倍の大きさで、上下の中央に置く。
+func oledDrawLandscape(l int) {
+	oledDrawText(oledLandDigitX, oledLandDigitY, string(rune('0'+l)), oledLandDigitScale)
+	if name := layerName(l); name != "" {
+		oledDrawCenteredIn(oledLandTextX, oledLandTextW, oledLandLabelY, "LAYER", 1)
+		oledDrawCenteredIn(oledLandTextX, oledLandTextW, oledLandNameY, name, oledLandNameScale)
+	} else {
+		oledDrawCenteredIn(oledLandTextX, oledLandTextW, (oledHeight-14)/2, "LAYER", 2)
+	}
 }
 
 // oledDrawText は、バッファに文字を書く。scale 倍に拡大する。座標は縦長の画面のもの。
@@ -321,9 +355,14 @@ func oledDrawText(x, y int16, s string, scale int16) {
 	}
 }
 
-// oledDrawCentered は、文字列を、縦長の画面の左右の中央にそろえて書く。
+// oledDrawCenteredIn は、文字列を、x0 から幅 areaW の場所の中央にそろえて書く。
 // 文字は ASCII だけ(1文字 = 1バイト)。
-func oledDrawCentered(y int16, s string, scale int16) {
+func oledDrawCenteredIn(x0, areaW, y int16, s string, scale int16) {
 	w := int16(len(s))*6*scale - scale // 最後の文字の右の空きは数えない
-	oledDrawText((oledLogicalW-w)/2, y, s, scale)
+	oledDrawText(x0+(areaW-w)/2, y, s, scale)
+}
+
+// oledDrawCentered は、文字列を、縦長の画面(幅32)の左右の中央にそろえて書く。
+func oledDrawCentered(y int16, s string, scale int16) {
+	oledDrawCenteredIn(0, oledHeight, y, s, scale)
 }
