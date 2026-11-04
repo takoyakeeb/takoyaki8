@@ -109,6 +109,9 @@ func handleCommand(line string) string {
 		resetLayerState() // キーマップが入れ替わったので、TG / TO の状態は解除する(protocol.md §3)
 		return "OK"
 
+	case "CFG":
+		return handleCfg(f)
+
 	case "RESET":
 		if len(f) != 1 {
 			return usageError("RESET")
@@ -120,6 +123,56 @@ func handleCommand(line string) string {
 	}
 
 	return "ERR BADCMD unknown command"
+}
+
+// handleCfg は、CFG コマンド(設定の読み書き。設定の中身は cfg.go)を処理する。
+//   CFG LIST              : ファームが知っている設定の名前の一覧
+//   CFG GET <name>        : 設定の値を読む(値が空のときは、"OK" だけ)
+//   CFG SET <name> [<value>] : 設定を書き換える(RAMのみ)。値を省くと、初期値に戻る
+// Flashへの保存は SAVE(段階3bで、つなぐ)。
+func handleCfg(f []string) string {
+	const usage = "CFG GET <name> | CFG SET <name> [<value>] | CFG LIST"
+	if len(f) < 2 {
+		return usageError(usage)
+	}
+	switch f[1] {
+	case "LIST":
+		if len(f) != 2 {
+			return usageError("CFG LIST")
+		}
+		resp := "OK"
+		for _, d := range cfgDefs {
+			resp += " " + d.name
+		}
+		return resp
+
+	case "GET":
+		if len(f) != 3 {
+			return usageError("CFG GET <name>")
+		}
+		if cfgDefIndex(f[2]) < 0 {
+			return "ERR BADARG unknown name"
+		}
+		v, _ := cfgGet(f[2])
+		if v == "" {
+			return "OK"
+		}
+		return "OK " + v
+
+	case "SET":
+		if len(f) != 3 && len(f) != 4 {
+			return usageError("CFG SET <name> [<value>]")
+		}
+		value := ""
+		if len(f) == 4 {
+			value = f[3]
+		}
+		if err := cfgSet(f[2], value); err != nil {
+			return "ERR BADARG " + err.Error()
+		}
+		return "OK"
+	}
+	return usageError(usage)
 }
 
 // usageError は、引数の数や形式が正しくないときの応答を作る。

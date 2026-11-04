@@ -78,5 +78,7 @@ func Info() string {
 		" keys=" + strconv.Itoa(NumKeys) +
 		" rows=" + strconv.Itoa(NumRows) +
 		" cols=" + strconv.Itoa(NumCols) +
-		" layers=" + strconv.Itoa(NumLayers)
+		" layers=" + strconv.Itoa(NumLayers) +
+		" cfg=1" + // 設定(CFG コマンド)に対応している
+		" lname=" + strconv.Itoa(cfgLnameMax) // レイヤー名の最大の文字数(cfg.go)
 }
