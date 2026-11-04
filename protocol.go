@@ -117,7 +117,8 @@ func handleCommand(line string) string {
 }
 
 // handleCfg は、CFG コマンド(設定の読み書き。設定の中身は cfg.go)を処理する。
-//   CFG LIST              : ファームが知っている設定の名前の一覧
+//   CFG LIST              : ファームが知っている設定の名前の一覧。候補が決まっている名前は、
+//                           「名前=候補|候補|…」の形(例: led_mode=layer|press|breathe|off)
 //   CFG GET <name>        : 設定の値を読む(値が空のときは、"OK" だけ)
 //   CFG SET <name> [<value>] : 設定を書き換える(RAMのみ)。値を省くと、初期値に戻る
 // Flashへの保存は SAVE(段階3bで、つなぐ)。
@@ -134,6 +135,9 @@ func handleCfg(f []string) string {
 		resp := "OK"
 		for _, d := range cfgDefs {
 			resp += " " + d.name
+			if opts := cfgOptions(d.name); len(opts) > 0 {
+				resp += "=" + strings.Join(opts, "|")
+			}
 		}
 		return resp
 

@@ -74,8 +74,21 @@ func layerName(l int) string {
 	return cfgNow[l].value
 }
 
-// レイヤーごとの色の初期値(仮。段階8の実機で決め直す)
+// レイヤーごとの色の初期値(段階8bで、このままに決定)
 var lcolorDefaults = [NumLayers]string{"2060FF", "FF8000", "20FF40", "FF2080"}
+
+// ledModeOptions は、led_mode の候補(画面に出す選択肢)。CFG LIST で返す。
+// test(診断用)は、画面に出さないので、入れない。
+// CFG SET led_mode には、候補にない名前も入れられる(知らない名前は layer と同じ動き)。
+var ledModeOptions = []string{"layer", "press", "breathe", "off"}
+
+// cfgOptions は、設定 name の候補の一覧を返す。候補が決まっていない(自由な値の)名前は nil。
+func cfgOptions(name string) []string {
+	if name == "led_mode" {
+		return ledModeOptions
+	}
+	return nil
+}
 
 // buildCfgDefs は、設定の表を作る。名前の並びが、保存するときの並びになる。
 func buildCfgDefs() {
