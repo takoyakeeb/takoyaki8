@@ -6,6 +6,7 @@ package main
 // 基板では縦置き(USB-C を上にして置く)なので、画面を90°回して、縦に見たときに読める向きで描く。
 // 描くときは、縦長の画面(幅32 x 高さ128)として座標を考え、oledPixel で実際の画面の座標に直す。
 // レイヤーの名前は、設定の lname0〜(cfg.go の layerName)から読む。CFG SET で変えると、すぐ画面に出る。
+// 明るさは、設定の oled(0〜100%)。0 は画面を消す(oledApplyLevel)。
 //
 // 画面は、変化がなくても oledEveryLoops ごとに全体を送る(fw 0.4.1 までの流れる印と、通信の量は同じ)。
 // 送るのに失敗したときの対策(下の oledMaxFails など)も、そのまま。
@@ -34,6 +35,9 @@ const (
 	oledDigitScale = 5  // レイヤーの番号の拡大(5x7 の文字を5倍 = 幅25 x 高さ35)
 	oledNameY      = 88 // 短い名前の上端の y
 
+	// SSD1306 の「コントラスト」の命令(次に、0〜255 の値を1つ送る)。明るさは、これで変える。
+	oledCmdContrast = 0x81
+
 	// 画面を、180°回して表示する。上下が逆に見えたら true にする。
 	oledFlip = false
 
@@ -53,6 +57,8 @@ var (
 	oledReady   bool            // OLED が見つかって、使える状態なら true
 	oledFails   int             // 画面を送るのに、続けて失敗した回数(成功したら 0 に戻る)
 	oledTicks   int             // メインループが何回まわったか(oledEveryLoops に達したら更新して0に戻す)
+
+	oledLevelSent = -1 // 最後に OLED へ送った明るさ(%)。-1 は、まだ送っていない
 )
 
 var oledWhite = color.RGBA{R: 255, G: 255, B: 255, A: 255} // 点灯させる色
@@ -224,6 +230,11 @@ func tickOLED() {
 // 送っている間(約12ms)は、メインループが止まる。
 // 送るのに失敗したときは、I2C を設定し直す。続けて oledMaxFails 回失敗したら、OLED の更新をやめる。
 func oledDraw() {
+	// 明るさを合わせる。0%(画面を消している)なら、画面は送らない(送る間のループの停止も省ける)
+	if !oledApplyLevel() {
+		return
+	}
+
 	l := currentLayer()
 
 	oledDev.ClearBuffer()
@@ -252,6 +263,26 @@ func oledDraw() {
 	// 通信をやり直せる状態に戻す(次の更新で、もう一度送る)
 	_ = i2cSetup()
 	oledResets++
+}
+
+// oledApplyLevel は、設定 oled(0〜100%)が前回送った値から変わっていたら、OLED に明るさを送る。
+// 0% は画面を消す(コントラスト 0 でも、SSD1306 はうっすら光るため)。1〜100% は、コントラストを 0〜255 に比例させる。
+// 画面を表示してよい(1%以上)なら true を返す。
+func oledApplyLevel() bool {
+	p := cfgInt("oled")
+	if p != oledLevelSent {
+		if p == 0 {
+			_ = oledDev.Sleep(true) // 画面を消す
+		} else {
+			if oledLevelSent <= 0 {
+				_ = oledDev.Sleep(false) // 消していた画面(または最初)を、つける
+			}
+			oledDev.Command(oledCmdContrast)
+			oledDev.Command(uint8(p * 255 / 100))
+		}
+		oledLevelSent = p
+	}
+	return p > 0
 }
 
 // oledPixel は、縦長の画面(幅32 x 高さ128。USB-C を上にして置いたとき)の点(lx, ly)を、

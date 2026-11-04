@@ -244,6 +244,17 @@ func cfgGet(name string) (string, bool) {
 	return cfgNow[i].value, true
 }
 
+// cfgInt は、いまの設定(RAM)の値を、整数で返す(led・oled のような 0〜100 の設定用)。
+// 値が読めないときは 100 を返す(設定の検査があるので、通常は起きない)。
+func cfgInt(name string) int {
+	v, _ := cfgGet(name)
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return 100
+	}
+	return n
+}
+
 // cfgSet は、いまの設定(RAM)を書き換える。Flash には書かない。
 // 空の値は、その名前の初期値に戻す。表にない名前や、使えない値は、エラー。
 func cfgSet(name, value string) error {
