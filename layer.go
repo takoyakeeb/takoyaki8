@@ -109,14 +109,55 @@ func resetLayerState() {
 	toggled = 0
 }
 
+// triLayers は、設定 tri0(例: "1,2,3")を読んで、3つのレイヤー番号 a, b, c を返す。
+// 「レイヤー a と b が両方有効なら、レイヤー c も有効」の意味(トライレイヤー)。
+// tri0 が空(無効)のときや、形がおかしいときは ok=false。
+// キーを押すたびに呼ぶので、文字列を分けて新しい配列を作らず、1文字ずつ数字を読む。
+func triLayers() (a, b, c int, ok bool) {
+	v, _ := cfgGet("tri0")
+	if v == "" {
+		return 0, 0, 0, false
+	}
+	var n [3]int
+	i := 0 // いま何番目の数字を読んでいるか
+	for k := 0; k < len(v); k++ {
+		ch := v[k]
+		switch {
+		case ch >= '0' && ch <= '9':
+			n[i] = n[i]*10 + int(ch-'0')
+		case ch == ',':
+			i++
+			if i > 2 {
+				return 0, 0, 0, false
+			}
+		default:
+			return 0, 0, 0, false
+		}
+	}
+	if i != 2 {
+		return 0, 0, 0, false
+	}
+	for _, x := range n {
+		if x < 1 || x >= NumLayers {
+			return 0, 0, 0, false
+		}
+	}
+	return n[0], n[1], n[2], true
+}
+
 // activeLayers は、いま有効なレイヤーを返す。ビットnが1なら、レイヤーnが有効。
 // レイヤー0は常に有効。TG / TO で有効にしたものと、MO を押している間のものが加わる。
+// そのうえで、トライレイヤー(tri0)の a と b が両方有効なら、c も有効にする(MO・TG・TO のどれで有効でも同じ)。
+// 判定は、呼ばれた時点の有効なレイヤーで行う。キーを押すとき(main.go)と、OLED の表示のときに呼ばれる。
 func activeLayers() uint32 {
 	active := uint32(1) | toggled
 	for l := 1; l < NumLayers; l++ {
 		if momentary[l] > 0 {
 			active |= 1 << uint(l)
 		}
+	}
+	if a, b, c, ok := triLayers(); ok && active&(1<<uint(a)) != 0 && active&(1<<uint(b)) != 0 {
+		active |= 1 << uint(c)
 	}
 	return active
 }
