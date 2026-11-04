@@ -12,7 +12,7 @@ import (
 const (
 	deviceName      = "takoyaki8"
 	protocolVersion = 1       // tinykeemap の docs/protocol.md の proto と同じ値
-	firmwareVersion = "0.4.2" // ファームウェアのバージョン
+	firmwareVersion = "0.5.0" // ファームウェアのバージョン
 )
 
 // ===== ピン割り当て(COL2ROW) =====
@@ -38,13 +38,27 @@ const debounceCount = 5
 const (
 	NumLEDs = 4 // つないだ LED の数(基板 rev1.0 は4個)
 
-	// 明るさの上限(0〜255)。32 は約12%で、4個を白で全灯しても約30mA程度。
-	ledLevel = 32
+	// 設定 led が 100% のときの、赤・緑・青それぞれの値(0〜255)。255 が最大。
+	// 段階8aで、128 から 255 に上げた(暗い側の段を増やすため)。
+	// 4個を白で全灯すると、128 で約120mA、255 で約240mA(目安)。USB の 500mA に収まる。
+	// ちらつきと発熱は、段階8aの実機で確認する。
+	ledMaxLevel = 255
 
-	// LED の表示を更新する間隔。メインループ(約1ms)が何回まわるたびに1回更新するか。
-	// 20 なら約20msごと。1 にすると毎回更新する(いちばん厳しい確認用)。
-	// 100 なら約0.1秒ごと。LED が4個のとき、1つずつ点くのを目で追える速さ。
+	// 通常の LED の表示を更新する間隔。メインループ(約1ms)が何回まわるたびに1回更新するか。
+	// 100 なら約0.1秒ごと。1 にすると毎回更新する(いちばん厳しい確認用)。
+	// 動いている効果の更新は、下の ledFastLoops。
 	ledEveryLoops = 100
+
+	// 動いている効果(press で光っているあいだ、breathe)の更新の間隔。
+	// 20 なら約20msごと(明るさを、なめらかに変えるため)。
+	ledFastLoops = 20
+
+	// press の効果(キーを押すと光って、消えていく)が、消えるまでの時間。
+	ledPressFadeMs = 600 // ミリ秒。300 だと余韻が短かったので、600 にした
+
+	// breathe の効果(ゆっくり明るさが変わる)の、1周の時間(ミリ秒)と、いちばん暗いときに残す明るさ(%。led の明るさに対して)。
+	ledBreathePeriodMs = 4000
+	ledBreatheMinPct   = 10
 )
 
 // ===== OLED(SSD1306、128x32、I2C)の設定 =====
@@ -78,5 +92,8 @@ func Info() string {
 		" keys=" + strconv.Itoa(NumKeys) +
 		" rows=" + strconv.Itoa(NumRows) +
 		" cols=" + strconv.Itoa(NumCols) +
-		" layers=" + strconv.Itoa(NumLayers)
+		" layers=" + strconv.Itoa(NumLayers) +
+		" cfg=1" + // 設定(CFG コマンド)に対応している
+		" lname=" + strconv.Itoa(cfgLnameMax) + // レイヤー名の最大の文字数(cfg.go)
+		" saved=" + savedFlag() // 電源を入れ直しても同じ状態なら 1(state.go)
 }

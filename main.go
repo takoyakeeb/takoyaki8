@@ -26,6 +26,12 @@ func main() {
 		keymap = km
 	}
 
+	// 設定(cfg.go)を読む。Flashに有効な設定があればそれを、なければ初期値を使う
+	initCfg()
+
+	// 「起動時に使われるもの」の控えを作る(INFO の saved の判定に使う。state.go)
+	markBoot()
+
 	// 押した時に送ったキーを覚えておき、離す時に同じものを離す(0は「送っていない」)
 	// SET でキーマップを書き換えても、押している最中のキーは元のキーを離すので、押しっぱなしにならない
 	var held [NumKeys]usbkbd.Keycode
@@ -49,6 +55,8 @@ func main() {
 			}
 
 			if ev.Pressed {
+				ledKeyPressed() // LED の press 効果の合図(led.go)。どのキーでも、押したときに呼ぶ
+
 				// いま有効なレイヤーで、押したキーの keycode を決める
 				code := keymap.Lookup(activeLayers(), ev.ID)
 				if kind, layer, ok := decodeLayerKey(code); ok {
@@ -64,6 +72,12 @@ func main() {
 						// TO(n): 切り替えで有効にしているレイヤーを、n だけにする(離すときは何もしない)
 						moveToLayer(layer)
 					}
+				} else if code == QK_LAYER_NEXT {
+					// 次のレイヤー: 土台のレイヤーを1つ進める(離すときは何もしない)
+					stepLayer(1)
+				} else if code == QK_LAYER_PREV {
+					// 前のレイヤー: 土台のレイヤーを1つ戻す(離すときは何もしない)
+					stepLayer(-1)
 				} else if a, ok := decodeKey(code); ok {
 					// 基本キー・修飾キー単体・修飾キー付き。修飾キーを先に押してから、基本キーを押す
 					heldMods[ev.ID] = a.mods

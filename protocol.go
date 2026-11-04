@@ -89,25 +89,19 @@ func handleCommand(line string) string {
 		if len(f) != 1 {
 			return usageError("SAVE")
 		}
-		// 現在のキーマップをFlashに保存する。消去を伴うので少し時間がかかる。
-		if err := saveKeymapToFlash(&keymap); err != nil {
-			return "ERR FLASH " + err.Error()
-		}
-		return "OK"
+		// キーマップと設定を、Flashに保存する。変わったほうだけ書く(state.go)。消去を伴うので少し時間がかかる。
+		return doSave()
 
 	case "LOAD":
 		if len(f) != 1 {
 			return usageError("LOAD")
 		}
-		// Flashの内容を読み直す。未保存の変更は捨てる。
-		// Flashの内容が無効なときは、RAMのキーマップを変えずにエラーを返す。
-		km, err := loadKeymapFromFlash()
-		if err != nil {
-			return "ERR FLASH " + err.Error()
-		}
-		keymap = km
-		resetLayerState() // キーマップが入れ替わったので、TG / TO の状態は解除する(protocol.md §3)
-		return "OK"
+		// キーマップと設定を、起動したときと同じ状態に戻す(state.go)。未保存の変更は捨てる。
+		// Flashが空(未保存)でも、エラーにはしない(初期値に戻る)。
+		return doLoad()
+
+	case "CFG":
+		return handleCfg(f)
 
 	case "RESET":
 		if len(f) != 1 {
@@ -120,6 +114,60 @@ func handleCommand(line string) string {
 	}
 
 	return "ERR BADCMD unknown command"
+}
+
+// handleCfg は、CFG コマンド(設定の読み書き。設定の中身は cfg.go)を処理する。
+//   CFG LIST              : ファームが知っている設定の名前の一覧。候補が決まっている名前は、
+//                           「名前=候補|候補|…」の形(例: led_mode=layer|press|breathe|off)
+//   CFG GET <name>        : 設定の値を読む(値が空のときは、"OK" だけ)
+//   CFG SET <name> [<value>] : 設定を書き換える(RAMのみ)。値を省くと、初期値に戻る
+// Flashへの保存は SAVE(段階3bで、つなぐ)。
+func handleCfg(f []string) string {
+	const usage = "CFG GET <name> | CFG SET <name> [<value>] | CFG LIST"
+	if len(f) < 2 {
+		return usageError(usage)
+	}
+	switch f[1] {
+	case "LIST":
+		if len(f) != 2 {
+			return usageError("CFG LIST")
+		}
+		resp := "OK"
+		for _, d := range cfgDefs {
+			resp += " " + d.name
+			if opts := cfgOptions(d.name); len(opts) > 0 {
+				resp += "=" + strings.Join(opts, "|")
+			}
+		}
+		return resp
+
+	case "GET":
+		if len(f) != 3 {
+			return usageError("CFG GET <name>")
+		}
+		if cfgDefIndex(f[2]) < 0 {
+			return "ERR BADARG unknown name"
+		}
+		v, _ := cfgGet(f[2])
+		if v == "" {
+			return "OK"
+		}
+		return "OK " + v
+
+	case "SET":
+		if len(f) != 3 && len(f) != 4 {
+			return usageError("CFG SET <name> [<value>]")
+		}
+		value := ""
+		if len(f) == 4 {
+			value = f[3]
+		}
+		if err := cfgSet(f[2], value); err != nil {
+			return "ERR BADARG " + err.Error()
+		}
+		return "OK"
+	}
+	return usageError(usage)
 }
 
 // usageError は、引数の数や形式が正しくないときの応答を作る。
@@ -156,6 +204,9 @@ func parseKeycode(s string) (code uint16, ok bool) {
 // (DF / TT などの種類を足すときは、ここにも足す)
 func validKeycode(code uint16) bool {
 	if code == KC_NO || code == KC_TRANSPARENT {
+		return true
+	}
+	if code == QK_LAYER_NEXT || code == QK_LAYER_PREV { // 次・前のレイヤー
 		return true
 	}
 	if _, _, ok := decodeLayerKey(code); ok {

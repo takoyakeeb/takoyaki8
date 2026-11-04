@@ -10,7 +10,7 @@ type Keymap [NumLayers][NumKeys]uint16
 // キー番号は、左上から右へ 0〜3、下の行が 4〜7(基板の SW1〜SW8 と同じ並び)。
 // どちらのレイヤーも、キー0(左上)がもう一方のレイヤーへ移るキー。
 // RESET コマンドや、Flashに有効なデータがないときに使う。
-// OLED に出すレイヤーの名前は oled.go の oledLayerNames(ここを変えたら、名前も合わせる)。
+// OLED に出すレイヤーの名前の初期値は cfg.go の lnameDefaults(ここを変えたら、名前も合わせる)。
 func defaultKeymap() Keymap {
 	km := Keymap{
 		// レイヤー0: MacOS(上の行 = ウィンドウの切り替え、下の行 = デスクトップの切り替え)
