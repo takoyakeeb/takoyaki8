@@ -61,6 +61,48 @@ func moveToLayer(n int) {
 	}
 }
 
+// baseLayer は、「土台のレイヤー」の番号を返す。TG / TO で有効にしているレイヤーのうち、いちばん番号が大きいもの。
+// 1つもなければ 0。押している間の MO(momentary)は数えない。次・前のレイヤーは、ここから数える。
+func baseLayer() int {
+	for l := NumLayers - 1; l > 0; l-- {
+		if toggled&(1<<uint(l)) != 0 {
+			return l
+		}
+	}
+	return 0
+}
+
+// layerIsUsed は、レイヤー l が「使われている」かどうかを返す。
+// レイヤー0は、いつも使われているものとして扱う(飛ばさない)。
+// それ以外は、「透過」でないキーが1つでもあれば使われている。すべて透過なら、使われていない。
+func layerIsUsed(l int) bool {
+	if l == 0 {
+		return true
+	}
+	for _, code := range keymap[l] {
+		if code != KC_TRANSPARENT {
+			return true
+		}
+	}
+	return false
+}
+
+// stepLayer は、次のレイヤー(dir = 1)・前のレイヤー(dir = -1)の動き。
+// 土台のレイヤーから、dir の向きに1つずつ見て、最初に見つかった「使われている」レイヤーへ、TO(n) と同じように移る。
+// 最後の「次」は 0 に戻り、0 の「前」は最後に移る(ぐるっと回る)。
+// 移れるレイヤーがほかになければ(使われているのが L0 だけのとき)、何も起きない。
+func stepLayer(dir int) {
+	base := baseLayer()
+	for i := 1; i < NumLayers; i++ {
+		// (base + dir*i) を 0〜NumLayers-1 の範囲に収める(マイナスになっても、足し直してから % で割る)
+		l := ((base+dir*i)%NumLayers + NumLayers) % NumLayers
+		if layerIsUsed(l) {
+			moveToLayer(l)
+			return
+		}
+	}
+}
+
 // resetLayerState は、TG / TO の状態を解除して、レイヤー0だけに戻す。
 // RESET と、成功した LOAD から呼ぶ。押している間の MO(momentary)はそのまま。
 func resetLayerState() {

@@ -70,6 +70,12 @@ func main() {
 						// TO(n): 切り替えで有効にしているレイヤーを、n だけにする(離すときは何もしない)
 						moveToLayer(layer)
 					}
+				} else if code == QK_LAYER_NEXT {
+					// 次のレイヤー: 土台のレイヤーを1つ進める(離すときは何もしない)
+					stepLayer(1)
+				} else if code == QK_LAYER_PREV {
+					// 前のレイヤー: 土台のレイヤーを1つ戻す(離すときは何もしない)
+					stepLayer(-1)
 				} else if a, ok := decodeKey(code); ok {
 					// 基本キー・修飾キー単体・修飾キー付き。修飾キーを先に押してから、基本キーを押す
 					heldMods[ev.ID] = a.mods
