@@ -121,7 +121,7 @@ func handleCommand(line string) string {
 //                           「名前=候補|候補|…」の形(例: led_mode=layer|press|breathe|off)
 //   CFG GET <name>        : 設定の値を読む(値が空のときは、"OK" だけ)
 //   CFG SET <name> [<value>] : 設定を書き換える(RAMのみ)。値を省くと、初期値に戻る
-// Flashへの保存は SAVE(段階3bで、つなぐ)。
+// Flashへの保存は SAVE(キーマップも設定も、変わったほうだけ書く)。
 func handleCfg(f []string) string {
 	const usage = "CFG GET <name> | CFG SET <name> [<value>] | CFG LIST"
 	if len(f) < 2 {
