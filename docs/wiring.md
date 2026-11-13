@@ -1,6 +1,6 @@
 # takoyaki8 配線表
 
-配線を変えたら、このファイルと `config.go` のピン定義を、同じコミットで更新する。
+配線を変えたら、このファイルと `model_takoyaki8.go` のピン定義を、同じコミットで更新する。
 
 ## 概要
 
@@ -21,7 +21,7 @@
 | 予備 | GPIO27 / GPIO28 |
 | 使用不可 | GPIO29(基板から引き出されていない)、GPIO16(オンボード LED 専用) |
 
-コード上のピン定義は `config.go` にある(LED = `pinLED`、OLED = `pinSDA` / `pinSCL`)。
+コード上のピン定義は `model_takoyaki8.go` にある(LED = `pinLED`、OLED = `pinSDA` / `pinSCL`)。
 
 ## 配線表
 
@@ -61,7 +61,7 @@ Row1:  4  5  6  7
 
 ## 基板 rev1.0 の構成
 
-回路図と基板の接続は、この配線表と `config.go` に一致している。
+回路図と基板の接続は、この配線表と `model_takoyaki8.go` に一致している。
 
 - マトリクス: 8キー(Choc v2、ホットスワップ)。D1〜D8(1N4148W、COL2ROW)。SW1〜SW8 = キー番号 0〜7
 - RP2040-Zero: 基板の表面に、部品面を下にして直接ハンダ付け(USB-C は上辺側)
