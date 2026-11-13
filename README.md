@@ -144,7 +144,7 @@ tinygo build -target=waveshare-rp2040-zero -o takoyaki8.uf2 .
 
 ### 初期キーマップ
 
-レイヤー0 は MacOS の操作、レイヤー1 は編集とスクリーンショットです。OLED には、レイヤー0 は「MAC」、レイヤー1 は「EDIT」と出ます(名前は、ファームの中で固定)。キーごとの割り当ては、`keymap.go` にもあります。
+レイヤー0 は MacOS の操作、レイヤー1 は編集とスクリーンショットです。OLED には、レイヤー0 は「MAC」、レイヤー1 は「EDIT」と出ます(名前は、ファームの中で固定)。キーごとの割り当ては、`model_takoyaki8.go` にもあります。
 
 **レイヤー0(MAC)**
 
@@ -183,7 +183,7 @@ SAVE は、毎回、同じ1セクタ(Flash の最後の部分)に書き込みま
 
 ## 配線とピン配置
 
-ピン配置と配線表は、[docs/wiring.md](docs/wiring.md) にあります(ピンの定義は `config.go`)。
+ピン配置と配線表は、[docs/wiring.md](docs/wiring.md) にあります(ピンの定義は `model_takoyaki8.go`)。
 
 ## ファイル構成
 
@@ -192,10 +192,11 @@ Go のファイルは、すべて `package main` で、リポジトリの直下�
 | ファイル | 役割 |
 |---|---|
 | `main.go` | 入口。起動時の準備と、メインループ(キーの読み取りと USB 送信、シリアルの処理、LED・OLED の更新) |
-| `config.go` | 設定(機種情報、ピン割り当て、行数・列数・レイヤー数、LED・OLED)。INFO の応答の元 |
+| `config.go` | 機種によらない設定(ファームのバージョン、行数・列数、LED・OLED の更新の間隔)。INFO の応答の元 |
+| `model_takoyaki8.go` | 機種 takoyaki8 の値(機種名、ピン割り当て、レイヤー数、LED・OLED のピンと個数、初期キーマップ、レイヤー名の初期値) |
 | `scanner.go` | 入力元の共通の形(キーイベントと、スキャナのインターフェース) |
 | `matrix.go` | COL2ROW のマトリクススキャナ(チャタリングの除去を含む) |
-| `keymap.go` | キーマップ(レイヤー × キー番号 = keycode)と、初期キーマップ |
+| `keymap.go` | キーマップ(レイヤー × キー番号 = keycode) |
 | `keycode.go` | keycode の定義(値は、tinykeemap の `docs/protocol.md` と同じ) |
 | `layer.go` | レイヤー切り替えキー(MO / TG / TO)の処理 |
 | `mods.go` | 修飾キーを押す・離す処理(複数のキーが同じ修飾キーを押していても、正しく離す) |

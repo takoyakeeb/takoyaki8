@@ -60,9 +60,7 @@ var (
 	cfgSource string     // 起動時に何を使ったか("flash" か "default:理由")。診断用
 )
 
-// レイヤー名の初期値(L0 = MAC、L1 = EDIT。それ以外は空)。
-// キーマップの初期値(keymap.go)に合わせた名前。空の名前は、OLED に名前を出さない。
-var lnameDefaults = [NumLayers]string{"MAC", "EDIT", "", ""}
+// レイヤー名の初期値(lnameDefaults)は、機種ごとに違うので、model_takoyaki8.go にある。
 
 // layerName は、レイヤー l の名前(設定の lname<l>)を返す。OLED の表示に使う。
 // cfgNow の先頭は、cfgBuild が表の順(lname0 〜 lname<NumLayers-1>)に並べるので、位置 l がそのまま lname<l>。
