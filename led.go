@@ -1,6 +1,6 @@
 package main
 
-// LED(WS2812B)の制御。データ線は config.go の pinLED(GPIO26)。
+// LED(WS2812B)の制御。データ線は model_takoyaki8.go の pinLED(GPIO26)。
 //
 // 設定(cfg.go)で動きを決める。
 //   led_mode: 効果の名前。
@@ -11,7 +11,7 @@ package main
 //     test  … 白い点が、端から端まで動き続ける(配線の診断用。tinykeemap の画面には出さない)。
 //     ファームが知らない名前は、layer と同じ動きにする。
 //   lcolor0〜: レイヤーごとの色(6桁の16進)。
-//   led: 明るさ(0〜100%)。100% は ledMaxLevel(config.go)。見た目が比例するよう、ledLevelFor で補正する。
+//   led: 明るさ(0〜100%)。100% は ledMaxLevel(model_takoyaki8.go)。見た目が比例するよう、ledLevelFor で補正する。
 // 設定を変えると、次の更新(約 ledEveryLoops ms 後)で、LED に出る。
 
 import (

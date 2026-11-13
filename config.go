@@ -5,29 +5,21 @@ import (
 	"strconv"
 )
 
-// このファイルが「設定の一元化」の場所。
-// ピン・キー数・レイヤー数・機種情報は、ここだけ書き換えれば他のファイルに反映される。
+// このファイルは、機種によらない設定(ファームのバージョン、更新の間隔など)と、INFO の応答を作る場所。
+// 機種ごとの値(機種名、ピン、レイヤー数、LED・OLED、初期キーマップ)は、model_takoyaki8.go にある。
 
-// ===== 機種情報(INFOコマンドで返す値の元) =====
+// ===== ファームの情報(INFOコマンドで返す値の元) =====
 const (
-	deviceName      = "takoyaki8"
 	protocolVersion = 1       // tinykeemap の docs/protocol.md の proto と同じ値
 	firmwareVersion = "0.5.0" // ファームウェアのバージョン
 )
 
-// ===== ピン割り当て(COL2ROW) =====
-// 配列(要素数が決まった並び)で書くと、行数・列数をピンの数から自動で決められる。
-var (
-	colPins = [...]machine.Pin{machine.GPIO2, machine.GPIO3, machine.GPIO4, machine.GPIO5}
-	rowPins = [...]machine.Pin{machine.GPIO0, machine.GPIO1}
-)
-
 // ===== マトリクスの大きさ =====
+// 行数・列数は、機種のファイルのピンの数から自動で決まる。
 const (
-	NumRows   = len(rowPins) // ピンの数から自動で決まる
-	NumCols   = len(colPins) // ピンの数から自動で決まる
-	NumKeys   = NumRows * NumCols
-	NumLayers = 4
+	NumRows = len(rowPins) // ピンの数から自動で決まる
+	NumCols = len(colPins) // ピンの数から自動で決まる
+	NumKeys = NumRows * NumCols
 )
 
 // 同じ読み取りが何回連続したら状態変化と確定するか
@@ -35,15 +27,8 @@ const (
 const debounceCount = 5
 
 // ===== LED(WS2812B)の設定 =====
+// ピン・個数・明るさの上限は、model_takoyaki8.go。
 const (
-	NumLEDs = 4 // つないだ LED の数(基板 rev1.0 は4個)
-
-	// 設定 led が 100% のときの、赤・緑・青それぞれの値(0〜255)。255 が最大。
-	// 段階8aで、128 から 255 に上げた(暗い側の段を増やすため)。
-	// 4個を白で全灯すると、128 で約120mA、255 で約240mA(目安)。USB の 500mA に収まる。
-	// ちらつきと発熱は、段階8aの実機で確認する。
-	ledMaxLevel = 255
-
 	// 通常の LED の表示を更新する間隔。メインループ(約1ms)が何回まわるたびに1回更新するか。
 	// 100 なら約0.1秒ごと。1 にすると毎回更新する(いちばん厳しい確認用)。
 	// 動いている効果の更新は、下の ledFastLoops。
@@ -61,26 +46,15 @@ const (
 	ledBreatheMinPct   = 10
 )
 
-// ===== OLED(SSD1306、128x32、I2C)の設定 =====
+// ===== OLED(SSD1306、I2C)の設定 =====
+// ピン・アドレス・画面の大きさは、model_takoyaki8.go。
 const (
-	// I2C アドレス(7ビット)。スキャンで 0x3C と確認済み。
-	oledAddress = 0x3C
-
 	// 通信の速さ。乱れるときは 100 * machine.KHz に下げる。
 	oledFreq = 400 * machine.KHz
 
 	// OLED の表示を更新する間隔。メインループ(約1ms)が何回まわるたびに1回更新するか。
 	// 100 なら約100msごと。1 にすると毎回更新する(いちばん厳しい確認用)。
 	oledEveryLoops = 100
-)
-
-// ピン(pinLED は led.go、pinSDA / pinSCL は oled.go で使用中。そのほかは未使用で、シリーズ共通ルールの記録用)
-const (
-	pinLED    = machine.GPIO26
-	pinSDA    = machine.GPIO14
-	pinSCL    = machine.GPIO15
-	pinSpare1 = machine.GPIO27
-	pinSpare2 = machine.GPIO28
 )
 
 // Info は INFO コマンドの応答のうち「OK 」の後ろに続く部分を作る。

@@ -1,6 +1,6 @@
 package main
 
-// OLED(SSD1306、128x32、I2C)の表示。I2C1 を使う。ピンは config.go の pinSDA(GPIO14)/ pinSCL(GPIO15)。
+// OLED(SSD1306、128x32、I2C)の表示。I2C1 を使う。ピンは model_takoyaki8.go の pinSDA(GPIO14)/ pinSCL(GPIO15)。
 //
 // 表示するもの: いま「いちばん上」の有効なレイヤーの番号(大きく)と、短い名前(layer.go の currentLayer)。
 // 向きは、設定 rotate(0 / 90 / 180 / 270)で決める。ボードを、USB-C が上の状態から、時計回りに何度回して置くか。
@@ -26,8 +26,7 @@ import (
 )
 
 const (
-	oledWidth  = 128 // 画面の幅(ドット。実際の画面)
-	oledHeight = 32  // 画面の高さ(ドット。実際の画面)
+	// 画面の大きさ(oledWidth、oledHeight)は、model_takoyaki8.go。
 
 	// 表示の位置と大きさ(縦長の画面の座標。幅32 x 高さ128。文字は、左右の中央にそろえる)
 	oledLabelY     = 8  // 「LAYER」の上端の y
