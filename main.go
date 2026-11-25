@@ -15,8 +15,10 @@ func main() {
 
 	kb := usbkbd.Port()
 
-	// LED(WS2812B)を使える状態にする(led.go)
-	initLED()
+	// 機種のファイルに並べた部品(LED など。part.go)を、使える状態にする
+	for _, p := range parts {
+		p.Start()
+	}
 
 	// OLED(SSD1306、I2C)を使える状態にする(oled.go)。つながっていなければ、何もしない
 	initOLED()
@@ -55,7 +57,10 @@ func main() {
 			}
 
 			if ev.Pressed {
-				ledKeyPressed() // LED の press 効果の合図(led.go)。どのキーでも、押したときに呼ぶ
+				// 部品への合図(LED の press 効果など)。どのキーでも、押したときに呼ぶ
+				for _, p := range parts {
+					p.KeyPressed()
+				}
 
 				// いま有効なレイヤーで、押したキーの keycode を決める
 				code := keymap.Lookup(activeLayers(), ev.ID)
@@ -107,9 +112,11 @@ func main() {
 		// USBシリアルに届いたコマンド(INFO / GET / SET / DUMP / SAVE / LOAD / RESET)を処理する
 		pollSerial()
 
-		// LED の表示を、一定回数ごとに1回だけ更新する(led.go)。
-		// 更新中は割り込みが止まる場合があるので、キー処理とシリアル処理のあとに置く。
-		tickLED()
+		// 部品(LED など)の更新。部品が、一定回数ごとに1回だけ更新する。
+		// LED の更新中は割り込みが止まる場合があるので、キー処理とシリアル処理のあとに置く。
+		for _, p := range parts {
+			p.Tick()
+		}
 
 		// OLED の表示を、一定回数ごとに1回だけ更新する(oled.go)。
 		// 画面全体を送る間(約12ms)は、ループが止まる。LED の更新のあとに置く。

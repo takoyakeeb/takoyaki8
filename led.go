@@ -1,6 +1,8 @@
 package main
 
-// LED(WS2812B)の制御。データ線は model_takoyaki8.go の pinLED(GPIO26)。
+// LED(WS2812B)の部品。データ線のピン・個数・明るさの上限は、機種のファイル(model_*.go)が
+// ledPart に入れて渡す(takoyaki8 は GPIO26、4個)。
+// 1つの機種で使える LED の部品は1つだけ(中で使う変数を、部品ごとに分けていないため)。
 //
 // 設定(cfg.go)で動きを決める。
 //   led_mode: 効果の名前。
@@ -11,7 +13,7 @@ package main
 //     test  … 白い点が、端から端まで動き続ける(配線の診断用。tinykeemap の画面には出さない)。
 //     ファームが知らない名前は、layer と同じ動きにする。
 //   lcolor0〜: レイヤーごとの色(6桁の16進)。
-//   led: 明るさ(0〜100%)。100% は ledMaxLevel(model_takoyaki8.go)。見た目が比例するよう、ledLevelFor で補正する。
+//   led: 明るさ(0〜100%)。100% は ledPart の maxLevel。見た目が比例するよう、ledLevelFor で補正する。
 // 設定を変えると、次の更新(約 ledEveryLoops ms 後)で、LED に出る。
 
 import (
@@ -23,12 +25,27 @@ import (
 	"tinygo.org/x/drivers/ws2812" // WS2812 にデータを送るドライバ
 )
 
+// ledPart は、LED の部品。機種のファイルが値を入れて、parts に並べる。
+type ledPart struct {
+	pin      machine.Pin // データ線のピン
+	count    int         // つないだ LED の数
+	maxLevel int         // 設定 led が 100% のときの、赤・緑・青それぞれの値(0〜255)
+}
+
+func (p *ledPart) Start() {
+	ledConf = p
+	initLED()
+}
+func (p *ledPart) Tick()       { tickLED() }
+func (p *ledPart) KeyPressed() { ledKeyPressed() }
+
 var (
-	ledDev    ws2812.Device       // ドライバ(これを通して LED に色を送る)
-	ledColors [NumLEDs]color.RGBA // NumLEDs 個ぶんの色。送る前にここへ書き込む
-	ledPos    int                 // test のとき、白い点がいる LED の番号
-	ledTicks  int                 // メインループが何回まわったか(ledWait に達したら更新して0に戻す)
-	ledWait   = ledEveryLoops    // 次の更新までに、メインループが何回まわるか(press で光っているあいだだけ、短くなる)
+	ledConf   *ledPart        // 使っている LED の部品(Start で入る)
+	ledDev    ws2812.Device   // ドライバ(これを通して LED に色を送る)
+	ledColors []color.RGBA    // LED の数ぶんの色。送る前にここへ書き込む(initLED で作る)
+	ledPos    int             // test のとき、白い点がいる LED の番号
+	ledTicks  int             // メインループが何回まわったか(ledWait に達したら更新して0に戻す)
+	ledWait   = ledEveryLoops // 次の更新までに、メインループが何回まわるか(press で光っているあいだだけ、短くなる)
 
 	ledEpoch time.Time // breathe: 起動した時刻(ここからの時間で、明るさを決める)
 
@@ -38,7 +55,8 @@ var (
 
 // initLED は、データ線を出力にして、ドライバを作り、全部の LED を消す。
 func initLED() {
-	pin := pinLED
+	ledColors = make([]color.RGBA, ledConf.count)
+	pin := ledConf.pin
 	pin.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	ledDev = ws2812.NewWS2812(pin)
 	ledEpoch = time.Now()
@@ -51,7 +69,7 @@ func initLED() {
 // 人の目は、暗い所の変化に敏感なので、比例ではなく2乗にする(50% で、見た目がおよそ半分)。
 // 0% は 0(消灯)。1% 以上は、最低でも 1 にする。
 func ledLevelFor(percent int) uint8 {
-	v := ledMaxLevel * percent * percent / 10000
+	v := ledConf.maxLevel * percent * percent / 10000
 	if percent > 0 && v == 0 {
 		v = 1
 	}
@@ -171,7 +189,7 @@ func tickLED() {
 			}
 		}
 	case "test":
-		ledPos = (ledPos + 1) % NumLEDs
+		ledPos = (ledPos + 1) % len(ledColors)
 		ledColors[ledPos] = ledScale(color.RGBA{R: 255, G: 255, B: 255, A: 255}, level)
 	default:
 		// layer と、ファームが知らない効果の名前
@@ -181,6 +199,6 @@ func tickLED() {
 		}
 	}
 
-	// NumLEDs 個ぶんまとめて LED に送る。この間(1個あたり約30μs。4個なら約0.12ms)は割り込みが止まる場合がある
+	// LED の数ぶんまとめて LED に送る。この間(1個あたり約30μs。4個なら約0.12ms)は割り込みが止まる場合がある
 	ledDev.WriteColors(ledColors[:])
 }
