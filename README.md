@@ -193,7 +193,9 @@ Go のファイルは、すべて `package main` で、リポジトリの直下�
 |---|---|
 | `main.go` | 入口。起動時の準備と、メインループ(キーの読み取りと USB 送信、シリアルの処理、LED・OLED の更新) |
 | `config.go` | 機種によらない設定(ファームのバージョン、行数・列数、LED・OLED の更新の間隔)。INFO の応答の元 |
-| `model_takoyaki8.go` | 機種 takoyaki8 の値(機種名、ピン割り当て、レイヤー数、LED・OLED のピンと個数、初期キーマップ、レイヤー名の初期値) |
+| `model_takoyaki8.go` | 機種 takoyaki8 の値(機種名、ピン割り当て、レイヤー数、使う部品(LED・OLED)とそのピン、初期キーマップ、レイヤー名の初期値)。ビルドのタグを付けないときに使われる |
+| `model_takoyaki0.go` | 機種 takoyaki0 の値(LED は RP2040-Zero の1個だけ、OLED なし)。`-tags takoyaki0` を付けてビルドしたときだけ使われる |
+| `part.go` | 部品(LED・OLED)の共通の形。機種のファイルが、使う部品を並べる |
 | `scanner.go` | 入力元の共通の形(キーイベントと、スキャナのインターフェース) |
 | `matrix.go` | COL2ROW のマトリクススキャナ(チャタリングの除去を含む) |
 | `keymap.go` | キーマップ(レイヤー × キー番号 = keycode) |
@@ -204,8 +206,10 @@ Go のファイルは、すべて `package main` で、リポジトリの直下�
 | `protocol.go` | tinykeemap との通信(INFO / GET / SET / DUMP / SAVE / LOAD / RESET)のコマンド処理 |
 | `serial.go` | USB シリアルから1行ずつコマンドを受け取り、応答を返す |
 | `flash.go` | キーマップの Flash への保存と読み込み(使える領域の最後の1セクタ。CRC32 で確認) |
-| `led.go` | LED(WS2812B)の制御。確認用の動き(白い点が動く)で、tinykeemap からは設定できない |
-| `oled.go` | OLED(SSD1306、128 × 32、I2C)の表示。レイヤーの番号と短い名前。名前は、ファームの中の固定の表で、tinykeemap からは設定できない |
+| `cfg.go` | 設定(CFG。レイヤー名、LED・OLED の明るさなど)の入れ物と、Flash への保存(最後から2番目の1セクタ) |
+| `state.go` | SAVE / LOAD の中身と、電源を入れ直しても同じ状態か(INFO の saved)の判定 |
+| `led.go` | LED(WS2812B)の部品。レイヤーの色で光る効果(layer / press / breathe / off)。明るさ・効果・色は tinykeemap から設定できる |
+| `oled.go` | OLED(SSD1306、128 × 32、I2C)の部品。レイヤーの番号と短い名前。名前・明るさ・向きは tinykeemap から設定できる |
 | `go.mod`、`go.sum` | Go モジュールの定義と、依存ライブラリ(`tinygo.org/x/drivers`)の記録 |
 | `docs/wiring.md` | 配線表とピン配置 |
 | `docs/images/` | README の写真と、分解図 |

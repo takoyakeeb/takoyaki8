@@ -21,7 +21,7 @@
 | 予備 | GPIO27 / GPIO28 |
 | 使用不可 | GPIO29(基板から引き出されていない)、GPIO16(オンボード LED 専用) |
 
-コード上のピン定義は `model_takoyaki8.go` にある(LED = `pinLED`、OLED = `pinSDA` / `pinSCL`)。
+コード上のピン定義は `model_takoyaki8.go` にある(LED = `ledPart` の `pin`、OLED = `oledPart` の `sda` / `scl`)。
 
 ## 配線表
 
@@ -65,7 +65,7 @@ Row1:  4  5  6  7
 
 - マトリクス: 8キー(Choc v2、ホットスワップ)。D1〜D8(1N4148W、COL2ROW)。SW1〜SW8 = キー番号 0〜7
 - RP2040-Zero: 基板の表面に、部品面を下にして直接ハンダ付け(USB-C は上辺側)
-- LED: WS2812B-V5 を4個(LED1〜LED4)。GPIO26 → R1(0Ω、直列抵抗のパッド)→ LED1 の DIN。LED1〜LED4 は数珠つなぎで、LED4 の DOUT は未接続。電源は 5V(USB の VBUS)、データ信号は 3.3V のまま。LED ごとに、100nF のコンデンサ(C1〜C4)。ファームは `NumLEDs = 4`、明るさの上限(設定 led が 100% のとき)は `ledMaxLevel = 255`(0〜255)。設定 led の初期値は 80%
+- LED: WS2812B-V5 を4個(LED1〜LED4)。GPIO26 → R1(0Ω、直列抵抗のパッド)→ LED1 の DIN。LED1〜LED4 は数珠つなぎで、LED4 の DOUT は未接続。電源は 5V(USB の VBUS)、データ信号は 3.3V のまま。LED ごとに、100nF のコンデンサ(C1〜C4)。ファームは `ledPart` の `count: 4`、明るさの上限(設定 led が 100% のとき)は `maxLevel: 255`(0〜255)。設定 led の初期値は 80%
 - OLED: J1(1×4 のピンヘッダー)に差す。並びは GND / 3V3 / SCL(GPIO15)/ SDA(GPIO14)。I2C1、アドレス 0x3C、通信速度 400kHz。外付けのプルアップ抵抗なしで動く(基板にも、ない)
 - OLED の向き: 縦置き(ピンが基板の下辺側)。USB-C を上にして置くと、読める
 - 更新間隔: LED は約 100ms(press で光っているあいだと breathe は約 20ms)、OLED は約 100ms
