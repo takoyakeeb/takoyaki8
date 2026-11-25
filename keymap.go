@@ -4,7 +4,7 @@ package main
 // 固定サイズの配列なので、将来バイト列に変換して保存・転送しやすい。
 type Keymap [NumLayers][NumKeys]uint16
 
-// 初期のキーマップ(defaultKeymap)は、機種ごとに違うので、model_takoyaki8.go にある。
+// 初期のキーマップ(defaultKeymap)は、機種ごとに違うので、機種のファイル(model_*.go)にある。
 
 // 現在(RAM上)のキーマップ。起動時は初期キーマップ。Flashに有効なデータがあれば main で入れ替える。
 var keymap = defaultKeymap()
