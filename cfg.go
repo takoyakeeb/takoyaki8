@@ -72,40 +72,31 @@ func layerName(l int) string {
 	return cfgNow[l].value
 }
 
-// レイヤーごとの色の初期値(段階8bで、このままに決定)
-var lcolorDefaults = [NumLayers]string{"2060FF", "FF8000", "20FF40", "FF2080"}
-
-// ledModeOptions は、led_mode の候補(画面に出す選択肢)。CFG LIST で返す。
-// test(診断用)は、画面に出さないので、入れない。
-// CFG SET led_mode には、候補にない名前も入れられる(知らない名前は layer と同じ動き)。
-var ledModeOptions = []string{"layer", "press", "breathe", "off"}
+// LED・OLED の設定の初期値と候補は、それぞれの部品(led.go、oled.go)にある。
 
 // cfgOptions は、設定 name の候補の一覧を返す。候補が決まっていない(自由な値の)名前は nil。
+// 候補は、部品が持つ(part.go の CfgOptions)。
 func cfgOptions(name string) []string {
-	if name == "led_mode" {
-		return ledModeOptions
+	for _, p := range parts {
+		if opts := p.CfgOptions(name); opts != nil {
+			return opts
+		}
 	}
 	return nil
 }
 
 // buildCfgDefs は、設定の表を作る。名前の並びが、保存するときの並びになる。
+// 並び: レイヤー名(コア) → 部品の項目(機種のファイルの parts の順) → tri0(コア)。
+// takoyaki8 では、lname0〜3、led、led_mode、lcolor0〜3、oled、rotate、tri0(13個)。
 func buildCfgDefs() {
 	cfgDefs = cfgDefs[:0]
 	for l := 0; l < NumLayers; l++ {
 		cfgDefs = append(cfgDefs, cfgDef{"lname" + strconv.Itoa(l), lnameDefaults[l], cfgName})
 	}
-	cfgDefs = append(cfgDefs,
-		cfgDef{"led", "80", cfgPercent}, // 3Dプリントのケース(バンパー)を付けた状態で、ちょうどよい明るさ(段階8bで決定。LED に送る値は 163)
-		cfgDef{"led_mode", "layer", cfgWord},
-	)
-	for l := 0; l < NumLayers; l++ {
-		cfgDefs = append(cfgDefs, cfgDef{"lcolor" + strconv.Itoa(l), lcolorDefaults[l], cfgColor})
+	for _, p := range parts {
+		cfgDefs = p.CfgDefs(cfgDefs)
 	}
-	cfgDefs = append(cfgDefs,
-		cfgDef{"oled", "100", cfgPercent},
-		cfgDef{"rotate", "0", cfgRotate},
-		cfgDef{"tri0", "", cfgTri},
-	)
+	cfgDefs = append(cfgDefs, cfgDef{"tri0", "", cfgTri})
 }
 
 // cfgNormalize は、値が、その種類で使える値かを調べる。使えるなら、保存する形にそろえて返す。

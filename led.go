@@ -39,6 +39,34 @@ func (p *ledPart) Start() {
 func (p *ledPart) Tick()       { tickLED() }
 func (p *ledPart) KeyPressed() { ledKeyPressed() }
 
+// レイヤーごとの色の初期値(段階8bで、このままに決定)
+var lcolorDefaults = [NumLayers]string{"2060FF", "FF8000", "20FF40", "FF2080"}
+
+// ledModeOptions は、led_mode の候補(画面に出す選択肢)。CFG LIST で返す。
+// test(診断用)は、画面に出さないので、入れない。
+// CFG SET led_mode には、候補にない名前も入れられる(知らない名前は layer と同じ動き)。
+var ledModeOptions = []string{"layer", "press", "breathe", "off"}
+
+// CfgDefs は、LED の設定の項目を足す(led、led_mode、lcolor0〜)。
+func (p *ledPart) CfgDefs(defs []cfgDef) []cfgDef {
+	defs = append(defs,
+		cfgDef{"led", "80", cfgPercent}, // 3Dプリントのケース(バンパー)を付けた状態で、ちょうどよい明るさ(段階8bで決定。LED に送る値は 163)
+		cfgDef{"led_mode", "layer", cfgWord},
+	)
+	for l := 0; l < NumLayers; l++ {
+		defs = append(defs, cfgDef{"lcolor" + strconv.Itoa(l), lcolorDefaults[l], cfgColor})
+	}
+	return defs
+}
+
+// CfgOptions は、led_mode の候補を返す。
+func (p *ledPart) CfgOptions(name string) []string {
+	if name == "led_mode" {
+		return ledModeOptions
+	}
+	return nil
+}
+
 var (
 	ledConf   *ledPart        // 使っている LED の部品(Start で入る)
 	ledDev    ws2812.Device   // ドライバ(これを通して LED に色を送る)

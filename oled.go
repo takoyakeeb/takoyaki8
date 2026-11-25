@@ -73,6 +73,17 @@ func (p *oledPart) Start() {
 func (p *oledPart) Tick()       { tickOLED() }
 func (p *oledPart) KeyPressed() {} // キーを押しても、OLED は何もしない
 
+// CfgDefs は、OLED の設定の項目を足す(oled = 明るさ、rotate = 向き)。
+func (p *oledPart) CfgDefs(defs []cfgDef) []cfgDef {
+	return append(defs,
+		cfgDef{"oled", "100", cfgPercent},
+		cfgDef{"rotate", "0", cfgRotate},
+	)
+}
+
+// CfgOptions は、OLED の設定に候補がないので、いつも nil。
+func (p *oledPart) CfgOptions(name string) []string { return nil }
+
 var (
 	oledConf    *oledPart       // 使っている OLED の部品(Start で入る)
 	oledDev     *ssd1306.Device // ドライバ(これを通して OLED に表示を送る)
