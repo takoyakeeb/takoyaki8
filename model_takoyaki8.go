@@ -1,8 +1,11 @@
+//go:build !takoyaki0
+
 package main
 
 import "machine"
 
 // このファイルは、機種 takoyaki8(基板 rev1.0)の値をまとめた場所。
+// ビルドのタグを付けないときは、この機種になる(-tags takoyaki0 を付けると、model_takoyaki0.go)。
 // 機種がコアに渡すもの: 機種名、行と列のピン、レイヤー数、初期キーマップ、レイヤー名の初期値、
 // 使う部品(LED のピン・個数・明るさの上限、OLED の I2C・ピン・アドレス・画面の大きさ)。
 // 行数・列数・キー数は、ピンの数から自動で決まる(config.go)。

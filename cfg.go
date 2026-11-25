@@ -60,7 +60,7 @@ var (
 	cfgSource string     // 起動時に何を使ったか("flash" か "default:理由")。診断用
 )
 
-// レイヤー名の初期値(lnameDefaults)は、機種ごとに違うので、model_takoyaki8.go にある。
+// レイヤー名の初期値(lnameDefaults)は、機種ごとに違うので、機種のファイル(model_*.go)にある。
 
 // layerName は、レイヤー l の名前(設定の lname<l>)を返す。OLED の表示に使う。
 // cfgNow の先頭は、cfgBuild が表の順(lname0 〜 lname<NumLayers-1>)に並べるので、位置 l がそのまま lname<l>。
