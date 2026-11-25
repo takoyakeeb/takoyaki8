@@ -1,6 +1,8 @@
 package main
 
-// OLED(SSD1306、128x32、I2C)の表示。I2C1 を使う。ピンは model_takoyaki8.go の pinSDA(GPIO14)/ pinSCL(GPIO15)。
+// OLED(SSD1306、I2C)の部品。I2C の番号・ピン・アドレス・画面の大きさは、機種のファイル(model_*.go)が
+// oledPart に入れて渡す(takoyaki8 は I2C1、GPIO14/15、0x3C、128x32)。
+// 1つの機種で使える OLED の部品は1つだけ(中で使う変数を、部品ごとに分けていないため)。
 //
 // 表示するもの: いま「いちばん上」の有効なレイヤーの番号(大きく)と、短い名前(layer.go の currentLayer)。
 // 向きは、設定 rotate(0 / 90 / 180 / 270)で決める。ボードを、USB-C が上の状態から、時計回りに何度回して置くか。
@@ -26,8 +28,6 @@ import (
 )
 
 const (
-	// 画面の大きさ(oledWidth、oledHeight)は、model_takoyaki8.go。
-
 	// 表示の位置と大きさ(縦長の画面の座標。幅32 x 高さ128。文字は、左右の中央にそろえる)
 	oledLabelY     = 8  // 「LAYER」の上端の y
 	oledDigitY     = 34 // レイヤーの番号の上端の y
@@ -56,7 +56,25 @@ const (
 	oledMaxFails = 3
 )
 
+// oledPart は、OLED の部品。機種のファイルが値を入れて、parts に並べる。
+type oledPart struct {
+	bus    *machine.I2C // I2C の番号(machine.I2C0 か I2C1。RP2040 では、SDA/SCL のピンで決まる)
+	sda    machine.Pin
+	scl    machine.Pin
+	addr   uint16 // I2C アドレス(7ビット)
+	width  int16  // 画面の幅(ドット。実際の画面)
+	height int16  // 画面の高さ(ドット。実際の画面)
+}
+
+func (p *oledPart) Start() {
+	oledConf = p
+	initOLED()
+}
+func (p *oledPart) Tick()       { tickOLED() }
+func (p *oledPart) KeyPressed() {} // キーを押しても、OLED は何もしない
+
 var (
+	oledConf    *oledPart       // 使っている OLED の部品(Start で入る)
 	oledDev     *ssd1306.Device // ドライバ(これを通して OLED に表示を送る)
 	oledStartAt time.Time       // この時刻を過ぎたら、OLED を使い始める
 	oledStarted bool            // 使い始める処理(oledStart)を、もう実行したか
@@ -163,11 +181,11 @@ func initOLED() {
 	oledStartAt = time.Now().Add(oledStartDelay)
 }
 
-// i2cSetup は、I2C1 を、GPIO14/15 で使える状態にする(設定し直すときにも使う)。
+// i2cSetup は、部品の I2C を、部品のピンで使える状態にする(設定し直すときにも使う)。
 func i2cSetup() error {
-	return machine.I2C1.Configure(machine.I2CConfig{
-		SDA:       pinSDA,
-		SCL:       pinSCL,
+	return oledConf.bus.Configure(machine.I2CConfig{
+		SDA:       oledConf.sda,
+		SCL:       oledConf.scl,
 		Frequency: oledFreq,
 	})
 }
@@ -182,15 +200,15 @@ func oledStart() {
 
 	// OLED がつながっているか確かめる(1バイト送って、返事(ACK)があるか)。
 	// つながっていなければ、ここで終わる(oledReady は false のまま)。
-	if err := machine.I2C1.Tx(oledAddress, []byte{0x00}, nil); err != nil {
+	if err := oledConf.bus.Tx(oledConf.addr, []byte{0x00}, nil); err != nil {
 		return
 	}
 
-	oledDev = ssd1306.NewI2C(machine.I2C1)
+	oledDev = ssd1306.NewI2C(oledConf.bus)
 	oledDev.Configure(ssd1306.Config{
-		Address: oledAddress,
-		Width:   oledWidth,
-		Height:  oledHeight,
+		Address: oledConf.addr,
+		Width:   oledConf.width,
+		Height:  oledConf.height,
 	})
 	oledReady = true
 	oledDraw()
@@ -300,11 +318,11 @@ func oledPixel(lx, ly int16) {
 	case 90: // 横長。画面そのまま
 		oledDev.SetPixel(lx, ly, oledWhite)
 	case 270: // 横長。180°回す
-		oledDev.SetPixel(oledWidth-1-lx, oledHeight-1-ly, oledWhite)
+		oledDev.SetPixel(oledConf.width-1-lx, oledConf.height-1-ly, oledWhite)
 	case 180: // 縦長(幅32 x 高さ128)。USB-C が下
-		oledDev.SetPixel(ly, oledHeight-1-lx, oledWhite)
+		oledDev.SetPixel(ly, oledConf.height-1-lx, oledWhite)
 	default: // 0: 縦長(幅32 x 高さ128)。USB-C が上
-		oledDev.SetPixel(oledWidth-1-ly, lx, oledWhite)
+		oledDev.SetPixel(oledConf.width-1-ly, lx, oledWhite)
 	}
 }
 
@@ -325,7 +343,7 @@ func oledDrawLandscape(l int) {
 		oledDrawCenteredIn(oledLandTextX, oledLandTextW, oledLandLabelY, "LAYER", 1)
 		oledDrawCenteredIn(oledLandTextX, oledLandTextW, oledLandNameY, name, oledLandNameScale)
 	} else {
-		oledDrawCenteredIn(oledLandTextX, oledLandTextW, (oledHeight-14)/2, "LAYER", 2)
+		oledDrawCenteredIn(oledLandTextX, oledLandTextW, (oledConf.height-14)/2, "LAYER", 2)
 	}
 }
 
@@ -363,5 +381,5 @@ func oledDrawCenteredIn(x0, areaW, y int16, s string, scale int16) {
 
 // oledDrawCentered は、文字列を、縦長の画面(幅32)の左右の中央にそろえて書く。
 func oledDrawCentered(y int16, s string, scale int16) {
-	oledDrawCenteredIn(0, oledHeight, y, s, scale)
+	oledDrawCenteredIn(0, oledConf.height, y, s, scale)
 }

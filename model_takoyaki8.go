@@ -4,7 +4,7 @@ import "machine"
 
 // このファイルは、機種 takoyaki8(基板 rev1.0)の値をまとめた場所。
 // 機種がコアに渡すもの: 機種名、行と列のピン、レイヤー数、初期キーマップ、レイヤー名の初期値、
-// 使う部品(LED のピン・個数・明るさの上限)、OLED のピン・アドレス・画面の大きさ。
+// 使う部品(LED のピン・個数・明るさの上限、OLED の I2C・ピン・アドレス・画面の大きさ)。
 // 行数・列数・キー数は、ピンの数から自動で決まる(config.go)。
 // ピン配置と配線表は docs/wiring.md。配線を変えたら、このファイルも同じコミットで直す。
 
@@ -23,7 +23,6 @@ const NumLayers = 4
 
 // ===== 使う部品 =====
 // コア(main.go)が、起動時・ループごと・キーを押したときに、並べた順に呼ぶ。
-// OLED は、まだ部品になっていない(main.go から直接呼ぶ)。
 var parts = []Part{
 	// LED(WS2812B)。基板 rev1.0 は4個。
 	// maxLevel は、設定 led が 100% のときの、赤・緑・青それぞれの値(0〜255)。255 が最大。
@@ -31,20 +30,11 @@ var parts = []Part{
 	// 4個を白で全灯すると、128 で約120mA、255 で約240mA(目安)。USB の 500mA に収まる。
 	// ちらつきと発熱は、段階8aの実機で確認する。
 	&ledPart{pin: machine.GPIO26, count: 4, maxLevel: 255},
+
+	// OLED(SSD1306、128x32)。GPIO14/15 は I2C1。
+	// アドレス 0x3C は、スキャンで確認済み。
+	&oledPart{bus: machine.I2C1, sda: machine.GPIO14, scl: machine.GPIO15, addr: 0x3C, width: 128, height: 32},
 }
-
-// ===== OLED(SSD1306、128x32、I2C1) =====
-// I2C の番号(I2C1)は、まだ oled.go に直接書いてある(GPIO14/15 は I2C1)。
-const (
-	pinSDA = machine.GPIO14
-	pinSCL = machine.GPIO15
-
-	// I2C アドレス(7ビット)。スキャンで 0x3C と確認済み。
-	oledAddress = 0x3C
-
-	oledWidth  = 128 // 画面の幅(ドット。実際の画面)
-	oledHeight = 32  // 画面の高さ(ドット。実際の画面)
-)
 
 // ===== 予備のピン(未使用。シリーズ共通ルールの記録用) =====
 const (

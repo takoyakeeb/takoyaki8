@@ -15,13 +15,11 @@ func main() {
 
 	kb := usbkbd.Port()
 
-	// 機種のファイルに並べた部品(LED など。part.go)を、使える状態にする
+	// 機種のファイルに並べた部品(LED、OLED など。part.go)を、使える状態にする。
+	// OLED は、ここでは使い始める時刻を決めるだけで、少し待ってから通信する(oled.go)
 	for _, p := range parts {
 		p.Start()
 	}
-
-	// OLED(SSD1306、I2C)を使える状態にする(oled.go)。つながっていなければ、何もしない
-	initOLED()
 
 	// 起動時: Flashに有効なキーマップがあればそれを使う。無効(未保存・壊れている)なら初期キーマップのまま。
 	if km, err := loadKeymapFromFlash(); err == nil {
@@ -112,15 +110,12 @@ func main() {
 		// USBシリアルに届いたコマンド(INFO / GET / SET / DUMP / SAVE / LOAD / RESET)を処理する
 		pollSerial()
 
-		// 部品(LED など)の更新。部品が、一定回数ごとに1回だけ更新する。
+		// 部品(LED、OLED など)の更新。部品が、一定回数ごとに1回だけ更新する。
 		// LED の更新中は割り込みが止まる場合があるので、キー処理とシリアル処理のあとに置く。
+		// OLED は、画面全体を送る間(約12ms)、ループが止まるので、LED のあとに並べる(model_takoyaki8.go)。
 		for _, p := range parts {
 			p.Tick()
 		}
-
-		// OLED の表示を、一定回数ごとに1回だけ更新する(oled.go)。
-		// 画面全体を送る間(約12ms)は、ループが止まる。LED の更新のあとに置く。
-		tickOLED()
 
 		time.Sleep(time.Millisecond)
 	}
