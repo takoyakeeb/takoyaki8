@@ -193,7 +193,7 @@ Go のファイルは、すべて `package main` で、リポジトリの直下�
 |---|---|
 | `main.go` | 入口。起動時の準備と、メインループ(キーの読み取りと USB 送信、シリアルの処理、LED・OLED の更新) |
 | `config.go` | 機種によらない設定(ファームのバージョン、行数・列数、LED・OLED の更新の間隔)。INFO の応答の元 |
-| `model_takoyaki8.go` | 機種 takoyaki8 の値(機種名、ピン割り当て、レイヤー数、使う部品(LED・OLED)とそのピン、初期キーマップ、レイヤー名の初期値)。ビルドのタグを付けないときに使われる |
+| `model_takoyaki8.go` | 機種 takoyaki8 の値(機種名、ピン割り当て、レイヤー数、使う部品(LED・OLED)とそのピン、キーの並び(LAYOUT で tinykeemap に送る)、初期キーマップ、レイヤー名の初期値)。ビルドのタグを付けないときに使われる |
 | `model_takoyaki0.go` | 機種 takoyaki0 の値(LED は RP2040-Zero の1個だけ、OLED なし)。`-tags takoyaki0` を付けてビルドしたときだけ使われる |
 | `part.go` | 部品(LED・OLED)の共通の形。機種のファイルが、使う部品を並べる |
 | `scanner.go` | 入力元の共通の形(キーイベントと、スキャナのインターフェース) |
@@ -203,7 +203,7 @@ Go のファイルは、すべて `package main` で、リポジトリの直下�
 | `layer.go` | レイヤー切り替えキー(MO / TG / TO)の処理 |
 | `mods.go` | 修飾キーを押す・離す処理(複数のキーが同じ修飾キーを押していても、正しく離す) |
 | `hid.go` | keycode を、TinyGo の USB キーボードの Keycode に変換 |
-| `protocol.go` | tinykeemap との通信(INFO / GET / SET / DUMP / SAVE / LOAD / RESET)のコマンド処理 |
+| `protocol.go` | tinykeemap との通信(INFO / GET / SET / DUMP / CFG / SAVE / LOAD / RESET / LAYOUT)のコマンド処理 |
 | `serial.go` | USB シリアルから1行ずつコマンドを受け取り、応答を返す |
 | `flash.go` | キーマップの Flash への保存と読み込み(使える領域の最後の1セクタ。CRC32 で確認) |
 | `cfg.go` | 設定(CFG。レイヤー名、LED・OLED の明るさなど)の入れ物と、Flash への保存(最後から2番目の1セクタ) |

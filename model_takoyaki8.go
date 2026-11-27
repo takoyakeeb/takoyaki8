@@ -39,6 +39,15 @@ var parts = []Part{
 	&oledPart{bus: machine.I2C1, sda: machine.GPIO14, scl: machine.GPIO15, addr: 0x3C, width: 128, height: 32},
 }
 
+// ===== キーの並び(LAYOUT コマンドで返す。tinykeemap が画面に描く) =====
+// KLE(keyboard-layout-editor.com)の JSON を1行にしたもの。決まり:
+// ・改行・空白を入れない。ASCII だけ。回転(r, rx, ry)と装飾(色・文字の大きさなど)は入れない
+// ・キーの文字は「行,列」(tinykeemap が index = 行 × 列数 + 列 に対応づけ、範囲外や重なりを検査する)
+// ・幅・高さが 1u でないキーだけ、{"w":1.5} のように前に書く
+// tinykeemap の layouts/takoyaki8.json と同じ中身(あちらは、LAYOUT のない fw 0.5.0 まで用)。並びがない機種は "" にする(INFO に layout=1 が出ない)。
+// キーの並びを変えたら、ここも同じコミットで直す。
+const layoutKLE = `[["0,0","0,1","0,2","0,3"],["1,0","1,1","1,2","1,3"]]`
+
 // ===== 予備のピン(未使用。シリーズ共通ルールの記録用) =====
 const (
 	pinSpare1 = machine.GPIO27
