@@ -69,5 +69,15 @@ func Info() string {
 		" layers=" + strconv.Itoa(NumLayers) +
 		" cfg=1" + // 設定(CFG コマンド)に対応している
 		" lname=" + strconv.Itoa(cfgLnameMax) + // レイヤー名の最大の文字数(cfg.go)
+		layoutFlag() + // キーの並び(LAYOUT コマンド)があるとき " layout=1"
 		" saved=" + savedFlag() // 電源を入れ直しても同じ状態なら 1(state.go)
+}
+
+// layoutFlag は、機種のファイルにキーの並び(layoutKLE)があるとき " layout=1" を、ないとき "" を返す。
+// ツール(tinykeemap)は、layout=1 があるときだけ LAYOUT を送る。
+func layoutFlag() string {
+	if layoutKLE == "" {
+		return ""
+	}
+	return " layout=1"
 }

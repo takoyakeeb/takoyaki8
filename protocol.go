@@ -10,6 +10,7 @@ import (
 //
 // INFO / GET / SET / DUMP はRAMのキーマップを読み書きする。
 // SAVE / LOAD / RESET はRAMとFlashの間の受け渡し(Flashの処理は flash.go)。
+// LAYOUT は、キーの並び(機種のファイルの layoutKLE)を返す。
 
 // handleCommand は、1行のコマンドを処理して応答を返す。
 // 空の行(何も書かれていない行)は、コマンドではないので "" を返す(応答しない)。
@@ -103,6 +104,16 @@ func handleCommand(line string) string {
 	case "CFG":
 		return handleCfg(f)
 
+	case "LAYOUT":
+		if len(f) != 1 {
+			return usageError("LAYOUT")
+		}
+		// キーの並び(KLE の JSON を1行にしたもの)を返す。並びがない機種は "OK" だけ。
+		if layoutKLE == "" {
+			return "OK"
+		}
+		return layoutResponse
+
 	case "RESET":
 		if len(f) != 1 {
 			return usageError("RESET")
@@ -115,6 +126,10 @@ func handleCommand(line string) string {
 
 	return "ERR BADCMD unknown command"
 }
+
+// layoutResponse は、LAYOUT の応答。定数どうしの連結なので、ビルドのときに1つの文字列になり、Flash に置かれる
+// (コマンドを受けるたびに連結しないので、RAM を使わない。送るときも写さない。serial.go の writeLine)。
+const layoutResponse = "OK " + layoutKLE
 
 // handleCfg は、CFG コマンド(設定の読み書き。設定の中身は cfg.go)を処理する。
 //   CFG LIST              : ファームが知っている設定の名前の一覧。候補が決まっている名前は、

@@ -1,6 +1,9 @@
 package main
 
-import "machine"
+import (
+	"machine"
+	"unsafe"
+)
 
 // USBシリアル(CDC)から1行ずつコマンドを受け取り、応答を返す部分。
 // コマンドの中身の処理は protocol.go(handleCommand)が担当する。
@@ -83,6 +86,18 @@ func pollSerial() {
 }
 
 // writeLine は、1行(末尾に \n を付けて)シリアルに書く。
+//
+// 本文と改行は、別々に書く(s + "\n" で連結すると、s の長さぶんのメモリを毎回使うため)。
+// 本文は、写さずにそのまま渡す(unsafe.StringData で、文字列の中身をバイトの並びとして見る)。
+// LAYOUT の応答のような長い文字列は Flash に置かれているので、RAM を使わずに送れる。
+// Write は中身を読むだけで書き換えないので、Flash の文字列を渡しても問題ない
+// (約4000文字の1行を送る実験で確認済み。2026-11-25)。
 func writeLine(s string) {
-	machine.Serial.Write([]byte(s + "\n"))
+	if len(s) > 0 {
+		machine.Serial.Write(unsafe.Slice(unsafe.StringData(s), len(s)))
+	}
+	machine.Serial.Write(newline)
 }
+
+// newline は、writeLine が行の終わりに書く改行。毎回作らないように、1つだけ用意しておく。
+var newline = []byte{'\n'}
