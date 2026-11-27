@@ -11,7 +11,7 @@ import (
 // ===== ファームの情報(INFOコマンドで返す値の元) =====
 const (
 	protocolVersion = 1       // tinykeemap の docs/protocol.md の proto と同じ値
-	firmwareVersion = "0.5.0" // ファームウェアのバージョン
+	firmwareVersion = "0.6.0" // ファームウェアのバージョン
 )
 
 // ===== マトリクスの大きさ =====
